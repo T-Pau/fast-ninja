@@ -32,6 +32,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 
 #include "Command.h"
+#include "Tokenizer.h"
+#include <iostream>
 
 class fast_ninja: public Command {
 public:
@@ -58,6 +60,18 @@ int main(int argc, char *argv[]) {
     return command.run(argc, argv);
 }
 
-void fast_ninja::process() {}
+void fast_ninja::process() {
+    auto filename = arguments.arguments[0];
+
+    auto tokenizer = Tokenizer{filename};
+
+    while (auto token = tokenizer.next()) {
+        std::cout << token.type_name();
+        if (!token.value.empty()) {
+            std::cout << " '" << token.value << "'";
+        }
+        std::cout << std::endl;
+    }
+}
 
 void fast_ninja::create_output() {}
