@@ -21,3 +21,4 @@ ReferenceAlignment: Left
 SeparateDefinitionBlocks : Always
 UseTab: Never
 #PPDirectiveIndentStyle: AfterHash
+Cpp11BracedListStyle: false

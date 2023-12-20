@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+Bindings.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,34 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef BINDINGS_H
+#define BINDINGS_H
 
-#include <iostream>
+#include <unordered_map>
 
-#include "Command.h"
-#include "File.h"
+#include "Variable.h"
 
-class fast_ninja : public Command {
+class Bindings {
   public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
+    Bindings() = default;
+    explicit Bindings(Tokenizer& tokenizer);
 
-    virtual ~fast_ninja() = default;
+    void print(std::ostream& stream, const std::string& indent) const;
+    void process(const File& file);
+    void add(const std::string& name, Variable variable) {variables[name] = std::move(variable);}
 
-  protected:
-    void process() override;
-    void create_output() override;
+    auto begin() { return variables.begin(); }
 
-    size_t maximum_arguments() override { return 1; }
+    auto end() { return variables.end(); }
 
-    size_t minimum_arguments() override { return 1; }
+    [[nodiscard]] auto begin() const { return variables.begin(); }
+
+    [[nodiscard]] auto end() const { return variables.end(); }
+    auto find(const std::string& name) {return variables.find(name);}
+    auto find(const std::string& name) const {return variables.find(name);}
 
   private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
+    std::unordered_map<std::string, Variable> variables;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
-
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
-}
+#endif // BINDINGS_H

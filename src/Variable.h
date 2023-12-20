@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+Variable.h -- 
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,33 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef VARIABLE_H
+#define VARIABLE_H
 
-#include <iostream>
+#include <string>
 
-#include "Command.h"
-#include "File.h"
+#include "Text.h"
+#include "Tokenizer.h"
 
-class fast_ninja : public Command {
-  public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
 
-    virtual ~fast_ninja() = default;
+class File;
 
-  protected:
-    void process() override;
-    void create_output() override;
+class Variable {
+public:
+    Variable() = default;
+    Variable(std::string name, bool is_list, Tokenizer& tokenizer);
 
-    size_t maximum_arguments() override { return 1; }
+    void process(const File& file);
+    void print_definition(std::ostream& stream) const;
+    void print_use(std::ostream& stream) const;
 
-    size_t minimum_arguments() override { return 1; }
+    bool is_list = false;
+    Text value;
 
-  private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
+private:
+    std::string name;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
 
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
 
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
-}
+#endif //VARIABLE_H

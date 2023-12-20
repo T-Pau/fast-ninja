@@ -32,12 +32,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <filesystem>
 #include <fstream>
 #include <string>
 
 class Tokenizer {
 public:
-    explicit Tokenizer(const std::string& filename): source{filename} {}
+    explicit Tokenizer(const std::filesystem::path& filename): source{filename} {}
+
+    enum class Skip {
+        NONE,
+        SPACE,
+        WHITESPACE
+    };
 
     enum class CharacterType {
         BRACED_VARIABLE,
@@ -77,21 +84,30 @@ public:
         Token(TokenType type, std::string value) : type{type}, value{std::move(value)} {}
 
         explicit operator bool() const {return type != TokenType::END;}
-        [[nodiscard]] std::string type_name() const;
+        [[nodiscard]] std::string string() const;
+        [[nodiscard]] std::string type_name() const {return type_name(type);}
+        [[nodiscard]] static std::string type_name(TokenType type);
 
         TokenType type;
         std::string value;
     };
 
-    [[nodiscard]] Token next();
-    void unget(Token token);
+    void expect(TokenType type, Skip skip = Skip::NONE);
+    [[nodiscard]] Token next(Skip skip = Skip::NONE);
+    void skip_space();
+    void skip_whitespace();
+    void unget(const Token& token);
+    [[nodiscard]] int current_line_number() const {return line_number;}
 
 private:
     static CharacterType type(int c);
-    static bool is_braced_variable(int c) {auto ctype = type(c); return ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::BRACED_VARIABLE;}
+    static bool is_braced_variable(int c) {const auto ctype = type(c); return ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::BRACED_VARIABLE;}
+    static bool is_braced_variable(std::string name);
     static bool is_simple_variable(int c) {return type(c) == CharacterType::SIMPLE_VARIABLE;}
-    static bool is_word(int c) {auto ctype = type(c); return ctype == CharacterType::BRACED_VARIABLE || ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::OTHER;}
+    static bool is_simple_variable(std::string name);
+    static bool is_word(int c) {const auto ctype = type(c); return ctype == CharacterType::BRACED_VARIABLE || ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::OTHER;}
 
+    [[nodiscard]] Token get_next();
     [[nodiscard]] Token tokenize_braced_variable();
     [[nodiscard]] Token tokenize_dollar();
     [[nodiscard]] std::optional<Token> tokenize_space();
@@ -105,6 +121,7 @@ private:
     std::optional<Token> ungot;
     bool beggining_of_line = true;
     int indent = 0;
+    int line_number = 1;
 };
 
 #endif //TOKENIZER_H

@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+Build.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,32 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef BUILD_H
+#define BUILD_H
 
-#include <iostream>
+#include <unordered_set>
+#include <vector>
 
-#include "Command.h"
-#include "File.h"
+#include "Bindings.h"
+#include "Rule.h"
 
-class fast_ninja : public Command {
+class Build {
   public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
+    Build() = default;
+    explicit Build(Tokenizer& tokenizer);
 
-    virtual ~fast_ninja() = default;
+    void process(const File& file);
+    void process_outputs(const File& file);
+    void print(std::ostream& stream) const;
 
-  protected:
-    void process() override;
-    void create_output() override;
-
-    size_t maximum_arguments() override { return 1; }
-
-    size_t minimum_arguments() override { return 1; }
+    [[nodiscard]] std::unordered_set<std::string> get_outputs() const;
 
   private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
+    const Rule* rule = nullptr;
+    std::string rule_name;
+    Text outputs;
+    Text inputs;
+    Bindings bindings;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
-
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
-}
+#endif // BUILD_H

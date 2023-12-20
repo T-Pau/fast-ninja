@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+ScopedDirective.cc -- 
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,10 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#include "ScopedDirective.h"
 
-#include <iostream>
 
-#include "Command.h"
-#include "File.h"
+#include <Exception.h>
 
-class fast_ninja : public Command {
-  public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
-
-    virtual ~fast_ninja() = default;
-
-  protected:
-    void process() override;
-    void create_output() override;
-
-    size_t maximum_arguments() override { return 1; }
-
-    size_t minimum_arguments() override { return 1; }
-
-  private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
-};
-
-std::vector<Commandline::Option> fast_ninja::options = {};
-
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
+void ScopedDirective::parse_bindings(Tokenizer& tokenizer) {
 }

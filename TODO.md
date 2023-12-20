@@ -1,0 +1,1 @@
+- detect circular list variables

@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+ScopedDirective.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,22 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef SCOPEDDIRECTIVE_H
+#define SCOPEDDIRECTIVE_H
 
-#include <iostream>
+#include <unordered_map>
 
-#include "Command.h"
-#include "File.h"
+#include "Variable.h"
 
-class fast_ninja : public Command {
+class ScopedDirective {
   public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
-
-    virtual ~fast_ninja() = default;
+    void process(const File& file);
 
   protected:
-    void process() override;
-    void create_output() override;
+    void parse_bindings(Tokenizer& tokenizer);
 
-    size_t maximum_arguments() override { return 1; }
-
-    size_t minimum_arguments() override { return 1; }
-
-  private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
+    std::unordered_map<std::string, Variable> bindings;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
 
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
-}
+#endif // SCOPEDDIRECTIVE_H

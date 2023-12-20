@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+Variable.cc --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,41 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#include "Variable.h"
 
-#include <iostream>
+Variable::Variable(std::string name, bool is_list, Tokenizer& tokenizer) : name{ std::move(name) }, is_list{ is_list } {
+    auto terminator = Tokenizer::TokenType::NEWLINE;
+    tokenizer.skip_space();
+    if (is_list) {
+        auto token = tokenizer.next();
+        if (token.type == Tokenizer::TokenType::NEWLINE) {
+            token = tokenizer.next();
+            if (token.type == Tokenizer::TokenType::BEGIN_SCOPE) {
+                terminator = Tokenizer::TokenType::END_SCOPE;
+            }
+            else {
+                tokenizer.unget(token);
+                return;
+            }
+        }
+    }
 
-#include "Command.h"
-#include "File.h"
-
-class fast_ninja : public Command {
-  public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
-
-    virtual ~fast_ninja() = default;
-
-  protected:
-    void process() override;
-    void create_output() override;
-
-    size_t maximum_arguments() override { return 1; }
-
-    size_t minimum_arguments() override { return 1; }
-
-  private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
-};
-
-std::vector<Commandline::Option> fast_ninja::options = {};
-
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
+    value = Text{tokenizer, terminator};
 }
 
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
+void Variable::process(const File& file) {
+    value.process(file);
 }
 
-void fast_ninja::create_output() {
-    file.create_output();
+void Variable::print_definition(std::ostream& stream) const {
+    stream << name << " = " << value;
+}
+
+void Variable::print_use(std::ostream& stream) const {
+    if (is_list) {
+        stream << value;
+    }
+    else {
+        stream << "${" << name << "}";
+    }
 }

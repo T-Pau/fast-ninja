@@ -1,9 +1,9 @@
 /*
-mask.cc -- main file
+Rule.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,48 +29,25 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef RULE_H
+#define RULE_H
 
-#include <iostream>
+#include <string>
 
-#include "Command.h"
-#include "File.h"
+#include "Bindings.h"
+#include "Variable.h"
 
-class fast_ninja : public Command {
+class Rule {
   public:
-    fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
+    Rule() = default;
+    Rule(std::string name, Tokenizer& tokenizer);
 
-    virtual ~fast_ninja() = default;
-
-  protected:
-    void process() override;
-    void create_output() override;
-
-    size_t maximum_arguments() override { return 1; }
-
-    size_t minimum_arguments() override { return 1; }
+    void process(const File& file);
+    void print(std::ostream& stream) const;
 
   private:
-    static std::vector<Commandline::Option> options;
-
-    File file;
+    std::string name;
+    Bindings bindings;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
-
-int main(int argc, char* argv[]) {
-    auto command = fast_ninja();
-
-    return command.run(argc, argv);
-}
-
-void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
-
-    file = File(filename);
-    file.process();
-}
-
-void fast_ninja::create_output() {
-    file.create_output();
-}
+#endif // RULE_H
