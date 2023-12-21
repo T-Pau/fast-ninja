@@ -8,4 +8,4 @@ Fast Ninja is written in C++20 and should run on any modern platform. It also co
 
 To build it, you need a C++20 compiler and [cmake](https://cmake.org). To run the tests, you need [Python](https://www.python.org) and [nihtest](https://github.com/nih-at/nihtest).
 
-[![Github Actions Build Status](https://github.com/T-Pau/fast-ninja/workflows/build/badge.svg)](https://github.com/T-Pau/fast-ninja/actions?query=workflow%3Abuild)
+[![CMake on multiple platforms](https://github.com/T-Pau/fast-ninja/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/T-Pau/fast-ninja/actions/workflows/cmake-multi-platform.yml)

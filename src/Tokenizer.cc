@@ -282,11 +282,11 @@ Tokenizer::CharacterType Tokenizer::type(int c) {
 }
 
 bool Tokenizer::is_braced_variable(std::string name) {
-    return std::ranges::all_of(name.begin(), name.end(), [](char c) { return is_braced_variable(c); });
+    return std::all_of(name.begin(), name.end(), [](char c) { return is_braced_variable(c); });
 }
 
 bool Tokenizer::is_simple_variable(std::string name) {
-    return std::ranges::all_of(name.begin(), name.end(), [](char c) { return is_simple_variable(c); });
+    return std::all_of(name.begin(), name.end(), [](char c) { return is_simple_variable(c); });
 }
 
 Tokenizer::Token Tokenizer::tokenize_braced_variable() {
