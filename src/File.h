@@ -48,7 +48,7 @@ class Tokenizer;
 class File {
   public:
     File() = default;
-    explicit File(const std::filesystem::path& filename, const File* previous = nullptr);
+    explicit File(const std::filesystem::path& filename, const std::filesystem::path& build_directory = ".", const File* previous = nullptr);
 
     void process();
     [[nodiscard]] bool is_output(const std::string& word) const {return outputs.contains(word);}
@@ -56,6 +56,9 @@ class File {
     [[nodiscard]] const Variable* find_variable(const std::string& name) const;
 
     void create_output() const;
+
+    std::filesystem::path source_directory;
+    std::filesystem::path build_directory;
 
   private:
     void parse(const std::filesystem::path& filename);
@@ -66,21 +69,18 @@ class File {
     void parse_rule(Tokenizer& tokenizer);
     void parse_subninja(Tokenizer& tokenizer);
 
-    std::string source_filename;
-    std::string build_filename;
+    std::filesystem::path source_filename;
+    std::filesystem::path build_filename;
 
     const File* previous = nullptr;
-
-    std::filesystem::path source_directory;
-    std::filesystem::path build_directory;
 
     std::unordered_set<std::string> defaults;
     std::unordered_set<std::string> outputs;
     std::unordered_map<std::string, Rule> rules;
     std::vector<Build> builds;
     Bindings bindings;
-    std::vector<Text> subninjas;
-    std::vector<File> subfiles;
+    std::vector<std::filesystem::path> subninjas;
+    std::vector<std::unique_ptr<File>> subfiles;
 };
 
 #endif // FILE_H

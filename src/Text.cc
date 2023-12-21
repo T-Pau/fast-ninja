@@ -35,6 +35,40 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "File.h"
 #include <Exception.h>
 
+std::string Text::Element::string() const {
+    if (!is_word() && !is_file()) {
+        return value;
+    }
+    else {
+        auto result = std::string{};
+        auto index = size_t{0};
+
+        while (index < value.size()) {
+            const auto special = value.find_first_of("$ \n", index);
+            if (special != std::string::npos) {
+                result += value.substr(index, special - index);
+                result += "$";
+                result += value[special];
+                index = special + 1;
+            }
+            else {
+                result += value.substr(index);
+                break;
+            }
+        }
+
+        if (is_build_file()) {
+            return "$build_directory/" + result;
+        }
+        else if (is_source_file()) {
+            return "$source_directory/" + result;
+        }
+        else {
+            return result;
+        }
+    }
+}
+
 Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
     tokenizer.skip_space();
     while (const auto token = tokenizer.next()) {
@@ -44,7 +78,7 @@ Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
                     throw Exception("missing ':'");
                 }
                 else if (terminator == Tokenizer::TokenType::END_SCOPE) {
-                    emplace_back(" ", false);
+                    emplace_back(ElementType::WHITESPACE, " ");
                 }
                 else {
                     return;
@@ -55,7 +89,7 @@ Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
                 return;
 
             case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                emplace_back(token.value, true);
+                emplace_back(ElementType::VARIABLE, token.value);
                 break;
 
             case Tokenizer::TokenType::COLON:
@@ -64,7 +98,7 @@ Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
                 }
                 // fallthrough
             default:
-                emplace_back(token.string(), false);
+                emplace_back((token.is_whitespace() ? ElementType::WHITESPACE : ElementType::WORD), token.string());
                 break;
         }
     }
@@ -77,7 +111,7 @@ std::ostream& operator<<(std::ostream& stream, const Text& text) {
 
 void Text::print(std::ostream& stream) const {
     for (const auto& element : *this) {
-        if (element.is_variable) {
+        if (element.is_variable()) {
             if (element.variable) {
                 element.variable->print_use(stream);
             }
@@ -86,22 +120,30 @@ void Text::print(std::ostream& stream) const {
             }
         }
         else {
-            stream << element.value;
+            stream << element.string();
         }
     }
 }
 
 void Text::process(const File& file) {
     for (auto& element : *this) {
-        if (element.is_variable) {
+        if (element.is_variable()) {
             element.variable = file.find_variable(element.value);
+        }
+        else if (element.is_word()) {
+            if (file.is_output(element.value)) {
+                element.type = ElementType::BUILD_FILE;
+            }
+            else if (std::filesystem::exists(file.source_directory / element.value)) {
+                element.type = ElementType::SOURCE_FILE;
+            }
         }
     }
 }
 
 void Text::collect_words(std::unordered_set<std::string>& words) const {
     for (auto& element : *this) {
-        if (element.is_variable) {
+        if (element.is_variable()) {
             if (element.variable && element.variable->is_list) {
                 element.variable->value.collect_words(words);
             }
@@ -113,6 +155,11 @@ void Text::collect_words(std::unordered_set<std::string>& words) const {
 }
 
 std::string Text::string() const {
-    // TODO: implement
-    return {};
+    auto result = std::string{};
+
+    for (auto& element: *this) {
+        result += element.string();
+    }
+
+    return result;
 }

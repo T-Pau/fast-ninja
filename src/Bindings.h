@@ -45,6 +45,7 @@ class Bindings {
     void process(const File& file);
     void add(const std::string& name, Variable variable) {variables[name] = std::move(variable);}
 
+    [[nodiscard]] auto empty() const {return variables.empty();}
     auto begin() { return variables.begin(); }
 
     auto end() { return variables.end(); }

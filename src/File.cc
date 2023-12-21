@@ -31,27 +31,20 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
-#include "../foundation/lib/Util.h"
-#include "Tokenizer.h"
-#include <Exception.h>
 #include <iostream>
 
-File::File(const std::filesystem::path& filename, const File* previous) : source_filename{ filename }, build_filename{ replace_extension(filename, "ninja") }, previous{ previous } {
-    if (previous) {
-        // TODO: derive build directory relavtie to previous
-    }
-    else {
-        build_directory = ".";
-    }
+#include "../foundation/lib/Util.h"
+#include "Exception.h"
+#include "Tokenizer.h"
+
+File::File(const std::filesystem::path& filename, const std::filesystem::path& build_directory, const File* previous) : source_filename{ filename }, previous{ previous }, build_directory{ build_directory.lexically_normal() } {
     source_directory = filename.parent_path();
+    build_filename = replace_extension(build_directory / source_filename.filename(), "ninja");
 
     parse(filename);
 
-    for (const auto& subninja:subninjas) {
-        auto name = subninja.string();
-
-        // TODO: derive build directory
-        subfiles.emplace_back(source_directory / name, this);
+    for (const auto& subninja : subninjas) {
+        subfiles.emplace_back(std::make_unique<File>(source_directory / subninja, build_directory / std::filesystem::path(subninja).parent_path(), this));
     }
 }
 
@@ -72,6 +65,10 @@ void File::process() {
 
     for (auto& build : builds) {
         build.process(*this);
+    }
+
+    for (const auto& file: subfiles) {
+        file->process();
     }
 }
 
@@ -100,22 +97,47 @@ const Variable* File::find_variable(const std::string& name) const {
 }
 
 void File::create_output() const {
-    auto stream = std::ofstream(build_filename);
+    {
+        std::filesystem::create_directories(build_directory);
+        auto stream = std::ofstream(build_filename);
 
-    if (stream.fail()) {
-        throw Exception("can't create output '%s'", build_filename.c_str());
+        if (stream.fail()) {
+            throw Exception("can't create output '%s'", build_filename.c_str());
+        }
+
+        auto top_file = this;
+        while (top_file->previous) {
+            top_file = top_file->previous;
+        }
+
+        stream << "top_source_directory = " << top_file->source_directory.string() << std::endl;
+        stream << "source_directory = " << source_directory.string() << std::endl;
+        stream << "top_build_directory = " << top_file->build_directory.string() << std::endl;
+        stream << "build_directory = " << build_directory.string() << std::endl;
+
+        if (!bindings.empty()) {
+            stream << std::endl;
+            bindings.print(stream, "");
+        }
+
+        for (auto& pair : rules) {
+            pair.second.print(stream);
+        }
+
+        for (auto& build : builds) {
+            build.print(stream);
+        }
+
+        if (!subninjas.empty()) {
+            stream << std::endl;
+            for (auto& subninja: subninjas) {
+                stream << "subninja " << replace_extension(subninja, "ninja") << std::endl;
+            }
+        }
     }
 
-    // TODO: print header (automatically created)
-
-    bindings.print(stream, "");
-
-    for (auto& pair : rules) {
-        pair.second.print(stream);
-    }
-
-    for (auto& build: builds) {
-        build.print(stream);
+    for (auto& subfile : subfiles) {
+        subfile->create_output();
     }
 }
 
@@ -213,5 +235,7 @@ void File::parse_rule(Tokenizer& tokenizer) {
 }
 
 void File::parse_subninja(Tokenizer& tokenizer) {
-    subninjas.emplace_back(tokenizer, Tokenizer::TokenType::NEWLINE);
+    auto text = Text{tokenizer, Tokenizer::TokenType::NEWLINE};
+
+    subninjas.emplace_back(text.string());
 }

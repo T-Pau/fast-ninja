@@ -53,7 +53,7 @@ class fast_ninja : public Command {
   private:
     static std::vector<Commandline::Option> options;
 
-    File file;
+    std::unique_ptr<File> file;
 };
 
 std::vector<Commandline::Option> fast_ninja::options = {};
@@ -65,12 +65,12 @@ int main(int argc, char* argv[]) {
 }
 
 void fast_ninja::process() {
-    auto filename = arguments.arguments[0];
+    const auto top_source_directory = std::filesystem::path(arguments.arguments[0]);
 
-    file = File(filename);
-    file.process();
+    file = std::make_unique<File>(top_source_directory / "build.fninja");
+    file->process();
 }
 
 void fast_ninja::create_output() {
-    file.create_output();
+    file->create_output();
 }

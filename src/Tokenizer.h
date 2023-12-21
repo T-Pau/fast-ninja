@@ -38,7 +38,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tokenizer {
 public:
-    explicit Tokenizer(const std::filesystem::path& filename): source{filename} {}
+    explicit Tokenizer(const std::filesystem::path& filename);
 
     enum class Skip {
         NONE,
@@ -84,6 +84,7 @@ public:
         Token(TokenType type, std::string value) : type{type}, value{std::move(value)} {}
 
         explicit operator bool() const {return type != TokenType::END;}
+        [[nodiscard]] bool is_whitespace() const {return type == TokenType::SPACE || type == TokenType::NEWLINE;}
         [[nodiscard]] std::string string() const;
         [[nodiscard]] std::string type_name() const {return type_name(type);}
         [[nodiscard]] static std::string type_name(TokenType type);

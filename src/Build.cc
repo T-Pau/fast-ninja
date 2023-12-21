@@ -36,6 +36,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Build::Build(Tokenizer& tokenizer) {
     outputs = Text{ tokenizer, Tokenizer::TokenType::COLON };
+    for (auto& element: outputs) {
+        element.type = Text::ElementType::BUILD_FILE;
+    }
     inputs = Text{tokenizer, Tokenizer::TokenType::NEWLINE};
     bindings = Bindings{ tokenizer };
 }

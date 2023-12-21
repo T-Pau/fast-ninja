@@ -51,19 +51,33 @@ class Variable;
  */
 class Text {
   public:
+    enum class ElementType {
+        BUILD_FILE,
+        SOURCE_FILE,
+        VARIABLE,
+        WHITESPACE,
+        WORD
+    };
     class Element {
       public:
-        Element(std::string value, bool is_variable) : value{ std::move(value) }, is_variable{ is_variable } {}
+        Element(ElementType type, std::string value) : type{type}, value{ std::move(value) } {}
 
+        [[nodiscard]] bool is_build_file() const {return type == ElementType::BUILD_FILE;}
+        [[nodiscard]] bool is_file() const {return is_build_file() || is_source_file();}
+        [[nodiscard]] bool is_source_file() const {return type == ElementType::SOURCE_FILE;}
+        [[nodiscard]] bool is_variable() const {return type == ElementType::VARIABLE;}
+        [[nodiscard]] bool is_word() const {return type == ElementType::WORD;}
+        [[nodiscard]] std::string string() const;
+
+        ElementType type;
         std::string value;
-        bool is_variable;
-        const Variable *variable;
+        const Variable *variable = nullptr;
     };
 
     Text() = default;
     Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator);
 
-    void emplace_back(std::string value, bool is_variable = false) { elements.emplace_back(std::move(value), is_variable); }
+    void emplace_back(ElementType type, std::string value) { elements.emplace_back(type, std::move(value)); }
 
     void print(std::ostream& stream) const;
     void process(const File& file);
