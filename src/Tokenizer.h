@@ -34,6 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <string>
 
 class Tokenizer {

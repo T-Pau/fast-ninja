@@ -33,9 +33,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TEXT_H
 
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "Tokenizer.h"
-#include <unordered_set>
 
 class File;
 class Variable;
