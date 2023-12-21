@@ -2,9 +2,9 @@
 
 Fast Ninja is a minimalist frontend for the [Ninja](https://ninja-build.org) build system to allow it to be used directly.
 
-## Building Accelerate
+## Building Fast Ninja
 
-Fast Ninja is written in C++20 and should run on any modern platform. It also comes with an extensive test suite.
+Fast Ninja is written in C++20 and should run on any modern platform. It will also come with an extensive test suite.
 
 To build it, you need a C++20 compiler and [cmake](https://cmake.org). To run the tests, you need [Python](https://www.python.org) and [nihtest](https://github.com/nih-at/nihtest).
 
