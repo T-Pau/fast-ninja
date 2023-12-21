@@ -36,6 +36,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 class Tokenizer {
 public:
