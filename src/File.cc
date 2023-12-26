@@ -131,7 +131,7 @@ void File::create_output() const {
         if (!subninjas.empty()) {
             stream << std::endl;
             for (auto& subninja: subninjas) {
-                stream << "subninja " << replace_extension(subninja, "ninja") << std::endl;
+                stream << "subninja " << replace_extension(subninja, "ninja").string() << std::endl;
             }
         }
     }
