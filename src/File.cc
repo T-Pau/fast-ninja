@@ -67,7 +67,9 @@ void File::process() {
         build.process(*this);
     }
 
-    for (const auto& file: subfiles) {
+    defaults.process(*this);
+
+    for (const auto& file : subfiles) {
         file->process();
     }
 }
@@ -128,9 +130,14 @@ void File::create_output() const {
             build.print(stream);
         }
 
+        if (!defaults.empty()) {
+            stream << std::endl;
+            stream << "default " << defaults << std::endl;
+        }
+
         if (!subninjas.empty()) {
             stream << std::endl;
-            for (auto& subninja: subninjas) {
+            for (auto& subninja : subninjas) {
                 stream << "subninja " << replace_extension(subninja, "ninja").string() << std::endl;
             }
         }
@@ -215,10 +222,7 @@ void File::parse_assignment(Tokenizer& tokenizer, const std::string& variable_na
 
 void File::parse_build(Tokenizer& tokenizer) { builds.emplace_back(tokenizer); }
 
-void File::parse_default(Tokenizer& tokenizer) {
-    throw Exception("default not implemented yet");
-    // TODO: implement
-}
+void File::parse_default(Tokenizer& tokenizer) { defaults.append(Text(tokenizer, Tokenizer::TokenType::NEWLINE)); }
 
 void File::parse_pool(Tokenizer& tokenizer) {
     throw Exception("pool not implemented yet");
@@ -235,7 +239,7 @@ void File::parse_rule(Tokenizer& tokenizer) {
 }
 
 void File::parse_subninja(Tokenizer& tokenizer) {
-    auto text = Text{tokenizer, Tokenizer::TokenType::NEWLINE};
+    auto text = Text{ tokenizer, Tokenizer::TokenType::NEWLINE };
 
     subninjas.emplace_back(text.string());
 }

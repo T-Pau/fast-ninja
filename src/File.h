@@ -74,11 +74,11 @@ class File {
 
     const File* previous = nullptr;
 
-    std::unordered_set<std::string> defaults;
     std::unordered_set<std::string> outputs;
     std::unordered_map<std::string, Rule> rules;
     std::vector<Build> builds;
     Bindings bindings;
+    Text defaults;
     std::vector<std::filesystem::path> subninjas;
     std::vector<std::unique_ptr<File>> subfiles;
 };

@@ -41,6 +41,7 @@ Build::Build(Tokenizer& tokenizer) {
             element.type = Text::ElementType::BUILD_FILE;
         }
     }
+    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
     inputs = Text{tokenizer, Tokenizer::TokenType::NEWLINE};
     bindings = Bindings{ tokenizer };
 }
@@ -55,7 +56,7 @@ void Build::process_outputs(const File& file) {
 }
 
 void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << inputs << std::endl;
+    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
     bindings.print(stream, "    ");
 }
 

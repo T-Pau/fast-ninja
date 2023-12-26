@@ -140,11 +140,12 @@ std::string Tokenizer::Token::type_name(TokenType type) {
     }
 }
 
-void Tokenizer::expect(TokenType type, Skip skip) {
+Tokenizer::Token Tokenizer::expect(TokenType type, Skip skip) {
     const auto token = next(skip);
     if (token.type != type) {
         throw Exception("expected %s", Token::type_name(type).c_str());
     }
+    return token;
 }
 
 Tokenizer::Token Tokenizer::next(Skip skip) {

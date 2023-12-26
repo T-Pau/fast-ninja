@@ -95,7 +95,7 @@ public:
         std::string value;
     };
 
-    void expect(TokenType type, Skip skip = Skip::NONE);
+    Token expect(TokenType type, Skip skip = Skip::NONE);
     [[nodiscard]] Token next(Skip skip = Skip::NONE);
     void skip_space();
     void skip_whitespace();

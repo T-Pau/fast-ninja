@@ -78,11 +78,13 @@ class Text {
     Text() = default;
     Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator);
 
+    void append(const Text& other) {elements.insert(elements.end(), other.elements.begin(), other.elements.end());}
     void emplace_back(ElementType type, std::string value) { elements.emplace_back(type, std::move(value)); }
 
     void print(std::ostream& stream) const;
     void process(const File& file);
     void collect_words(std::unordered_set<std::string>& words) const;
+    [[nodiscard]] bool empty() const {return elements.empty();}
     [[nodiscard]] std::string string() const;
 
     [[nodiscard]] std::vector<Element>::iterator begin() { return elements.begin(); }
