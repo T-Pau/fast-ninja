@@ -12,6 +12,8 @@ SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+option(RUN_REGRESS "Run regression tests" ON)
+
 INCLUDE(GNUInstallDirs)
 
 set(ARCHIVE_NAME ${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION})
@@ -47,6 +49,14 @@ ENDIF(NOT TARGET dist)
 # Checks
 
 ADD_DEFINITIONS("-DHAVE_CONFIG_H")
+
+find_program(NIHTEST nihtest)
+if(RUN_REGRESS)
+  if (NOT NIHTEST)
+    message(WARNING "-- nihtest not found, regression testing disabled")
+    set(RUN_REGRESS OFF)
+  endif()
+endif()
 
 # Testing
 enable_testing()
