@@ -1,0 +1,16 @@
+arguments ..
+file build.fninja <>
+rule a
+    command = a $in $out
+    flags = --verbose
+end-of-inline-data
+file build/build.ninja {} <>
+top_source_directory = ..
+source_directory = ..
+top_build_directory = .
+build_directory = .
+
+rule a
+    command = a $in $out
+    flags = --verbose
+end-of-inline-data

@@ -1,0 +1,7 @@
+[settings]
+features-files = @CMAKE_BINARY_DIR@/config.h
+test-input-directories = @CMAKE_CURRENT_SOURCE_DIR@
+program-directories = @CMAKE_CURRENT_BINARY_DIR@
+    @CMAKE_BINARY_DIR@/src
+default-program = fast-ninja
+default-working-directory = build
