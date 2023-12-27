@@ -209,7 +209,7 @@ void File::parse(const std::filesystem::path& filename) {
                         throw Exception("invalid token");
                 }
             } catch (Exception& ex) {
-                std::cerr << tokenizer.file_name() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
+                std::cerr << tokenizer.file_name().string() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
                 throw Exception();
             }
         }

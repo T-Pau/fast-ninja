@@ -101,7 +101,7 @@ public:
     void skip_whitespace();
     void unget(const Token& token);
     [[nodiscard]] int current_line_number() const {return line_number;}
-    [[nodiscard]] const std::string&file_name() const {return filename;}
+    [[nodiscard]] const std::filesystem::path& file_name() const {return filename;}
 
 private:
     static CharacterType type(int c);
@@ -121,7 +121,7 @@ private:
     static std::unordered_map<std::string, TokenType> keywords;
     static std::unordered_map<int, CharacterType> special_characters;
 
-    std::string filename;
+    std::filesystem::path filename;
     std::ifstream source;
     std::optional<Token> ungot;
     bool beggining_of_line = true;
