@@ -35,10 +35,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Bindings.h"
 #include <filesystem>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <unordered_set>
 
 #include "Build.h"
+#include "Pool.h"
 #include "Rule.h"
 #include "Variable.h"
 
@@ -75,7 +76,8 @@ class File {
     const File* previous = nullptr;
 
     std::unordered_set<std::string> outputs;
-    std::unordered_map<std::string, Rule> rules;
+    std::map<std::string, Rule> rules;
+    std::map<std::string, Pool> pools;
     std::vector<Build> builds;
     Bindings bindings;
     Text defaults;

@@ -5,6 +5,7 @@ ADD_EXECUTABLE(fast-ninja
         Bindings.cc
         Build.cc
         File.cc
+        Pool.cc
         Rule.cc
         ScopedDirective.cc
         Text.cc

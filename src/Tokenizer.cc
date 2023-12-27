@@ -61,7 +61,7 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
 };
 // clang-format on
 
-Tokenizer::Tokenizer(const std::filesystem::path& filename): source{filename} {
+Tokenizer::Tokenizer(const std::filesystem::path& filename): filename{filename}, source{filename} {
     if (source.fail()) {
         throw Exception("can't open '%s'", filename.c_str());
     }

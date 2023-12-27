@@ -149,60 +149,70 @@ void File::create_output() const {
 }
 
 void File::parse(const std::filesystem::path& filename) {
-    auto tokenizer = Tokenizer(filename);
+    auto tokenizers = std::vector<Tokenizer>{};
+    tokenizers.emplace_back(filename);
 
-    try {
-        while (const auto token = tokenizer.next()) {
-            switch (token.type) {
-                case Tokenizer::TokenType::NEWLINE:
-                case Tokenizer::TokenType::SPACE:
-                case Tokenizer::TokenType::END:
+        while (!tokenizers.empty()) {
+            auto& tokenizer = tokenizers.back();
+
+            try {
+                const auto token = tokenizer.next();
+
+                switch (token.type) {
+                    case Tokenizer::TokenType::END:
+                        tokenizers.pop_back();
                     break;
 
-                case Tokenizer::TokenType::BUILD:
-                    parse_build(tokenizer);
+                    case Tokenizer::TokenType::NEWLINE:
+                    case Tokenizer::TokenType::SPACE:
+                        break;
+
+                    case Tokenizer::TokenType::BUILD:
+                        parse_build(tokenizer);
                     break;
 
-                case Tokenizer::TokenType::DEFAULT:
-                    parse_default(tokenizer);
+                    case Tokenizer::TokenType::DEFAULT:
+                        parse_default(tokenizer);
                     break;
 
-                case Tokenizer::TokenType::INCLUDE:
-                    // TODO
+                    case Tokenizer::TokenType::INCLUDE: {
+                        auto name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE);
+                        tokenizers.emplace_back(name.string());
+                        break;
+                    }
+
+                    case Tokenizer::TokenType::POOL:
+                        parse_pool(tokenizer);
                     break;
 
-                case Tokenizer::TokenType::POOL:
-                    parse_pool(tokenizer);
+                    case Tokenizer::TokenType::RULE:
+                        parse_rule(tokenizer);
                     break;
 
-                case Tokenizer::TokenType::RULE:
-                    parse_rule(tokenizer);
+                    case Tokenizer::TokenType::SUBNINJA:
+                        parse_subninja(tokenizer);
                     break;
 
-                case Tokenizer::TokenType::SUBNINJA:
-                    parse_subninja(tokenizer);
+                    case Tokenizer::TokenType::WORD:
+                        parse_assignment(tokenizer, token.value);
                     break;
 
-                case Tokenizer::TokenType::WORD:
-                    parse_assignment(tokenizer, token.value);
-                    break;
-
-                case Tokenizer::TokenType::ASSIGN:
-                case Tokenizer::TokenType::ASSIGN_LIST:
-                case Tokenizer::TokenType::BEGIN_SCOPE:
-                case Tokenizer::TokenType::COLON:
-                case Tokenizer::TokenType::END_SCOPE:
-                case Tokenizer::TokenType::IMPLICIT_DEPENDENCY:
-                case Tokenizer::TokenType::ORDER_DEPENDENCY:
-                case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
-                case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                    throw Exception("invalid token");
+                    case Tokenizer::TokenType::ASSIGN:
+                    case Tokenizer::TokenType::ASSIGN_LIST:
+                    case Tokenizer::TokenType::BEGIN_SCOPE:
+                    case Tokenizer::TokenType::COLON:
+                    case Tokenizer::TokenType::END_SCOPE:
+                    case Tokenizer::TokenType::IMPLICIT_DEPENDENCY:
+                    case Tokenizer::TokenType::ORDER_DEPENDENCY:
+                    case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
+                    case Tokenizer::TokenType::VARIABLE_REFERENCE:
+                        throw Exception("invalid token");
+                }
+            } catch (Exception& ex) {
+                std::cerr << tokenizer.file_name() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
+                throw Exception();
             }
         }
-    } catch (Exception& ex) {
-        std::cerr << filename.string() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
-        throw Exception();
-    }
 }
 
 void File::parse_assignment(Tokenizer& tokenizer, const std::string& variable_name) {
@@ -225,8 +235,12 @@ void File::parse_build(Tokenizer& tokenizer) { builds.emplace_back(tokenizer); }
 void File::parse_default(Tokenizer& tokenizer) { defaults.append(Text(tokenizer, Tokenizer::TokenType::NEWLINE)); }
 
 void File::parse_pool(Tokenizer& tokenizer) {
-    throw Exception("pool not implemented yet");
-    // TODO: implement
+    tokenizer.skip_space();
+    const auto token = tokenizer.next();
+    if (token.type != Tokenizer::TokenType::WORD) {
+        throw Exception("name expected");
+    }
+    pools[token.string()] = Pool(token.string(), tokenizer);
 }
 
 void File::parse_rule(Tokenizer& tokenizer) {

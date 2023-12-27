@@ -1,5 +1,5 @@
 /*
-Bindings.h --
+Pool.h -- 
 
 Copyright (C) Dieter Baron
 
@@ -29,35 +29,25 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BINDINGS_H
-#define BINDINGS_H
+#ifndef POOL_H
+#define POOL_H
 
-#include <map>
+#include <string>
 
+#include "Bindings.h"
 #include "Variable.h"
 
-class Bindings {
-  public:
-    Bindings() = default;
-    explicit Bindings(Tokenizer& tokenizer);
+class Pool {
+public:
+    Pool() = default;
+    Pool(std::string name, Tokenizer& tokenizer);
 
-    void print(std::ostream& stream, const std::string& indent) const;
     void process(const File& file);
-    void add(const std::string& name, Variable variable) {variables[name] = std::move(variable);}
+    void print(std::ostream& stream) const;
 
-    [[nodiscard]] auto empty() const {return variables.empty();}
-    auto begin() { return variables.begin(); }
-
-    auto end() { return variables.end(); }
-
-    [[nodiscard]] auto begin() const { return variables.begin(); }
-
-    [[nodiscard]] auto end() const { return variables.end(); }
-    auto find(const std::string& name) {return variables.find(name);}
-    auto find(const std::string& name) const {return variables.find(name);}
-
-  private:
-    std::map<std::string, Variable> variables;
+private:
+    std::string name;
+    Bindings bindings;
 };
 
-#endif // BINDINGS_H
+#endif //POOL_H

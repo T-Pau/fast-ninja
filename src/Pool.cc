@@ -1,5 +1,5 @@
 /*
-Bindings.h --
+Pool.cc -- 
 
 Copyright (C) Dieter Baron
 
@@ -29,35 +29,16 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BINDINGS_H
-#define BINDINGS_H
+#include "Pool.h"
 
-#include <map>
+Pool::Pool(std::string name, Tokenizer& tokenizer) : name{ std::move(name) } {
+    tokenizer.expect(Tokenizer::TokenType::NEWLINE, Tokenizer::Skip::SPACE);
+    bindings = Bindings{tokenizer};
+}
 
-#include "Variable.h"
+void Pool::process(const File& file) { bindings.process(file); }
 
-class Bindings {
-  public:
-    Bindings() = default;
-    explicit Bindings(Tokenizer& tokenizer);
-
-    void print(std::ostream& stream, const std::string& indent) const;
-    void process(const File& file);
-    void add(const std::string& name, Variable variable) {variables[name] = std::move(variable);}
-
-    [[nodiscard]] auto empty() const {return variables.empty();}
-    auto begin() { return variables.begin(); }
-
-    auto end() { return variables.end(); }
-
-    [[nodiscard]] auto begin() const { return variables.begin(); }
-
-    [[nodiscard]] auto end() const { return variables.end(); }
-    auto find(const std::string& name) {return variables.find(name);}
-    auto find(const std::string& name) const {return variables.find(name);}
-
-  private:
-    std::map<std::string, Variable> variables;
-};
-
-#endif // BINDINGS_H
+void Pool::print(std::ostream& stream) const {
+    stream << std::endl << "pool " << name << std::endl;
+    bindings.print(stream, "    ");
+}
