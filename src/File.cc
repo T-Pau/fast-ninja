@@ -90,7 +90,7 @@ const Variable* File::find_variable(const std::string& name) const {
     for (auto file = this; file; file = file->previous) {
         const auto& it = file->bindings.find(name);
 
-        if (it != bindings.end()) {
+        if (it != file->bindings.end()) {
             return &it->second;
         }
     }
