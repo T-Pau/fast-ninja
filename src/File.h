@@ -36,6 +36,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <filesystem>
 #include <string>
 #include <map>
+#include <set>
 #include <unordered_set>
 
 #include "Build.h"
@@ -53,6 +54,7 @@ class File {
 
     void process();
     [[nodiscard]] bool is_output(const std::string& word) const {return outputs.contains(word);}
+    [[nodiscard]] bool is_top() const {return !previous;}
     [[nodiscard]] const Rule* find_rule(const std::string& name) const;
     [[nodiscard]] const Variable* find_variable(const std::string& name) const;
 
@@ -70,12 +72,15 @@ class File {
     void parse_rule(Tokenizer& tokenizer);
     void parse_subninja(Tokenizer& tokenizer);
 
+    void add_generator_build(Text& outputs, Text& inputs) const;
+
     std::filesystem::path source_filename;
     std::filesystem::path build_filename;
 
     const File* previous = nullptr;
 
     std::unordered_set<std::string> outputs;
+    std::set<std::string> includes;
     std::map<std::string, Rule> rules;
     std::map<std::string, Pool> pools;
     std::vector<Build> builds;

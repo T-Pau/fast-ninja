@@ -40,6 +40,7 @@ class Bindings {
   public:
     Bindings() = default;
     explicit Bindings(Tokenizer& tokenizer);
+    explicit Bindings(const std::vector<Variable>& variable_list);
 
     void print(std::ostream& stream, const std::string& indent) const;
     void process(const File& file);

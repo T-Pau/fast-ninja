@@ -13,4 +13,10 @@ build_directory = .
 rule a
     command = a $in $out
     flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja $top_source_directory
+    generator = 1
+
+build ./build.ninja : fast-ninja ../build.fninja
 end-of-inline-data

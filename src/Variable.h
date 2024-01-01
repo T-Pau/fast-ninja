@@ -44,16 +44,15 @@ class Variable {
 public:
     Variable() = default;
     Variable(std::string name, bool is_list, Tokenizer& tokenizer);
+    Variable(std::string name, bool is_list, Text value): name{std::move(name)}, is_list{is_list}, value{std::move(value)} {}
 
     void process(const File& file);
     void print_definition(std::ostream& stream) const;
     void print_use(std::ostream& stream) const;
 
+    std::string name;
     bool is_list = false;
     Text value;
-
-private:
-    std::string name;
 };
 
 

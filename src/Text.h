@@ -77,6 +77,8 @@ class Text {
 
     Text() = default;
     Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator);
+    explicit Text(std::string value): Text{std::vector<Element>{Element{ElementType::WORD, std::move(value)}}} {}
+    explicit Text(std::vector<Element> elements): elements{std::move(elements)} {}
 
     void append(const Text& other) {elements.insert(elements.end(), other.elements.begin(), other.elements.end());}
     void emplace_back(ElementType type, std::string value) { elements.emplace_back(type, std::move(value)); }

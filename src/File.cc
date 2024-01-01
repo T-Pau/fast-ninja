@@ -49,6 +49,22 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
 }
 
 void File::process() {
+    if (is_top()) {
+        rules["fast-ninja"] = Rule("fast-ninja", Bindings({
+            Variable("command", false, Text{std::vector<Text::Element>{
+                    Text::Element{Text::ElementType::WORD, "fast-ninja"},
+                    Text::Element{Text::ElementType::WHITESPACE, " "},
+                    Text::Element{Text::ElementType::VARIABLE, "top_source_directory"}
+                }}),
+            Variable("generator", false, Text("1"))
+        }));
+        auto outputs = Text{};
+        auto inputs = Text{};
+        add_generator_build(outputs, inputs);
+
+        builds.emplace_back("fast-ninja", outputs, inputs, Bindings{});
+    }
+
     for (auto& build : builds) {
         build.process_outputs(*this);
         auto current_outputs = build.get_outputs();
@@ -99,47 +115,45 @@ const Variable* File::find_variable(const std::string& name) const {
 }
 
 void File::create_output() const {
-    {
-        std::filesystem::create_directories(build_directory);
-        auto stream = std::ofstream(build_filename);
+    std::filesystem::create_directories(build_directory);
+    auto stream = std::ofstream(build_filename);
 
-        if (stream.fail()) {
-            throw Exception("can't create output '%s'", build_filename.c_str());
-        }
+    if (stream.fail()) {
+        throw Exception("can't create output '%s'", build_filename.c_str());
+    }
 
-        auto top_file = this;
-        while (top_file->previous) {
-            top_file = top_file->previous;
-        }
+    auto top_file = this;
+    while (!top_file->is_top()) {
+        top_file = top_file->previous;
+    }
 
-        stream << "top_source_directory = " << top_file->source_directory.string() << std::endl;
-        stream << "source_directory = " << source_directory.string() << std::endl;
-        stream << "top_build_directory = " << top_file->build_directory.string() << std::endl;
-        stream << "build_directory = " << build_directory.string() << std::endl;
+    stream << "top_source_directory = " << top_file->source_directory.string() << std::endl;
+    stream << "source_directory = " << source_directory.string() << std::endl;
+    stream << "top_build_directory = " << top_file->build_directory.string() << std::endl;
+    stream << "build_directory = " << build_directory.string() << std::endl;
 
-        if (!bindings.empty()) {
-            stream << std::endl;
-            bindings.print(stream, "");
-        }
+    if (!bindings.empty()) {
+        stream << std::endl;
+        bindings.print(stream, "");
+    }
 
-        for (auto& pair : rules) {
-            pair.second.print(stream);
-        }
+    for (auto& pair : rules) {
+        pair.second.print(stream);
+    }
 
-        for (auto& build : builds) {
-            build.print(stream);
-        }
+    for (auto& build : builds) {
+        build.print(stream);
+    }
 
-        if (!defaults.empty()) {
-            stream << std::endl;
-            stream << "default " << defaults << std::endl;
-        }
+    if (!defaults.empty()) {
+        stream << std::endl;
+        stream << "default " << defaults << std::endl;
+    }
 
-        if (!subninjas.empty()) {
-            stream << std::endl;
-            for (auto& subninja : subninjas) {
-                stream << "subninja " << replace_extension(subninja, "ninja").string() << std::endl;
-            }
+    if (!subninjas.empty()) {
+        stream << std::endl;
+        for (auto& subninja : subninjas) {
+            stream << "subninja " << replace_extension(subninja, "ninja").string() << std::endl;
         }
     }
 
@@ -152,67 +166,68 @@ void File::parse(const std::filesystem::path& filename) {
     auto tokenizers = std::vector<Tokenizer>{};
     tokenizers.emplace_back(filename);
 
-        while (!tokenizers.empty()) {
-            auto& tokenizer = tokenizers.back();
+    while (!tokenizers.empty()) {
+        auto& tokenizer = tokenizers.back();
 
-            try {
-                const auto token = tokenizer.next();
+        try {
+            const auto token = tokenizer.next();
 
-                switch (token.type) {
-                    case Tokenizer::TokenType::END:
-                        tokenizers.pop_back();
+            switch (token.type) {
+                case Tokenizer::TokenType::END:
+                    tokenizers.pop_back();
+                break;
+
+                case Tokenizer::TokenType::NEWLINE:
+                case Tokenizer::TokenType::SPACE:
                     break;
 
-                    case Tokenizer::TokenType::NEWLINE:
-                    case Tokenizer::TokenType::SPACE:
-                        break;
+                case Tokenizer::TokenType::BUILD:
+                    parse_build(tokenizer);
+                break;
 
-                    case Tokenizer::TokenType::BUILD:
-                        parse_build(tokenizer);
+                case Tokenizer::TokenType::DEFAULT:
+                    parse_default(tokenizer);
+                break;
+
+                case Tokenizer::TokenType::INCLUDE: {
+                    auto name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE);
+                    includes.insert(name.string());
+                    tokenizers.emplace_back(name.string());
                     break;
-
-                    case Tokenizer::TokenType::DEFAULT:
-                        parse_default(tokenizer);
-                    break;
-
-                    case Tokenizer::TokenType::INCLUDE: {
-                        auto name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE);
-                        tokenizers.emplace_back(name.string());
-                        break;
-                    }
-
-                    case Tokenizer::TokenType::POOL:
-                        parse_pool(tokenizer);
-                    break;
-
-                    case Tokenizer::TokenType::RULE:
-                        parse_rule(tokenizer);
-                    break;
-
-                    case Tokenizer::TokenType::SUBNINJA:
-                        parse_subninja(tokenizer);
-                    break;
-
-                    case Tokenizer::TokenType::WORD:
-                        parse_assignment(tokenizer, token.value);
-                    break;
-
-                    case Tokenizer::TokenType::ASSIGN:
-                    case Tokenizer::TokenType::ASSIGN_LIST:
-                    case Tokenizer::TokenType::BEGIN_SCOPE:
-                    case Tokenizer::TokenType::COLON:
-                    case Tokenizer::TokenType::END_SCOPE:
-                    case Tokenizer::TokenType::IMPLICIT_DEPENDENCY:
-                    case Tokenizer::TokenType::ORDER_DEPENDENCY:
-                    case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
-                    case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                        throw Exception("invalid token");
                 }
-            } catch (Exception& ex) {
-                std::cerr << tokenizer.file_name().string() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
-                throw Exception();
+
+                case Tokenizer::TokenType::POOL:
+                    parse_pool(tokenizer);
+                break;
+
+                case Tokenizer::TokenType::RULE:
+                    parse_rule(tokenizer);
+                break;
+
+                case Tokenizer::TokenType::SUBNINJA:
+                    parse_subninja(tokenizer);
+                break;
+
+                case Tokenizer::TokenType::WORD:
+                    parse_assignment(tokenizer, token.value);
+                break;
+
+                case Tokenizer::TokenType::ASSIGN:
+                case Tokenizer::TokenType::ASSIGN_LIST:
+                case Tokenizer::TokenType::BEGIN_SCOPE:
+                case Tokenizer::TokenType::COLON:
+                case Tokenizer::TokenType::END_SCOPE:
+                case Tokenizer::TokenType::IMPLICIT_DEPENDENCY:
+                case Tokenizer::TokenType::ORDER_DEPENDENCY:
+                case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
+                case Tokenizer::TokenType::VARIABLE_REFERENCE:
+                    throw Exception("invalid token");
             }
+        } catch (Exception& ex) {
+            std::cerr << tokenizer.file_name().string() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
+            throw Exception();
         }
+    }
 }
 
 void File::parse_assignment(Tokenizer& tokenizer, const std::string& variable_name) {
@@ -256,4 +271,22 @@ void File::parse_subninja(Tokenizer& tokenizer) {
     auto text = Text{ tokenizer, Tokenizer::TokenType::NEWLINE };
 
     subninjas.emplace_back(text.string());
+}
+
+void File::add_generator_build(Text& outputs, Text& inputs) const {
+    if (!outputs.empty()) {
+        outputs.emplace_back(Text::ElementType::WHITESPACE, " ");
+    }
+    outputs.emplace_back(Text::ElementType::WORD, build_filename.string());
+    if (!inputs.empty()) {
+        inputs.emplace_back(Text::ElementType::WHITESPACE, " ");
+    }
+    inputs.emplace_back(Text::ElementType::WORD, source_filename.string());
+    for (auto& file: includes) {
+        inputs.emplace_back(Text::ElementType::WHITESPACE, " ");
+        inputs.emplace_back(Text::ElementType::WORD, file);
+    }
+    for (const auto& file: subfiles) {
+        file->add_generator_build(outputs, inputs);
+    }
 }

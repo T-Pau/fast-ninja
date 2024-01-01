@@ -41,6 +41,7 @@ class Rule {
   public:
     Rule() = default;
     Rule(std::string name, Tokenizer& tokenizer);
+    Rule(std::string name, Bindings bindings): name{std::move(name)}, bindings{std::move(bindings)} {}
 
     void process(const File& file);
     void print(std::ostream& stream) const;

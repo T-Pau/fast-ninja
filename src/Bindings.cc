@@ -54,6 +54,11 @@ Bindings::Bindings(Tokenizer& tokenizer) {
     }
 }
 
+Bindings::Bindings(const std::vector<Variable>& variable_list) {
+    for (auto& variable: variable_list) {
+        variables[variable.name] = variable;
+    }
+}
 
 void Bindings::print(std::ostream& stream, const std::string& indent) const {
     for (auto& pair : *this) {

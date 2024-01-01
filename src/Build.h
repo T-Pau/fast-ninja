@@ -42,6 +42,7 @@ class Build {
   public:
     Build() = default;
     explicit Build(Tokenizer& tokenizer);
+    Build(std::string rule_name, Text outputs, Text inputs, Bindings bindings): rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)}, bindings{std::move(bindings)} {}
 
     void process(const File& file);
     void process_outputs(const File& file);
@@ -50,7 +51,7 @@ class Build {
     [[nodiscard]] std::unordered_set<std::string> get_outputs() const;
 
   private:
-    const Rule* rule = nullptr;
+    const Rule* rule{};
     std::string rule_name;
     Text outputs;
     Text inputs;
