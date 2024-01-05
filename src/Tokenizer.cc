@@ -115,7 +115,7 @@ std::string Tokenizer::Token::type_name(TokenType type) {
             return "newline";
 
         case TokenType::ORDER_DEPENDENCY:
-            return "|@";
+            return "||";
 
         case TokenType::POOL:
             return "pool";
@@ -130,7 +130,7 @@ std::string Tokenizer::Token::type_name(TokenType type) {
             return "subninja";
 
         case TokenType::VALIDATION_DEPENDENCY:
-            return "||";
+            return "|@";
 
         case TokenType::VARIABLE_REFERENCE:
             return "$";
