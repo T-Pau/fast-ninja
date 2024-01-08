@@ -31,9 +31,29 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Text.h"
 
-
+#include "Exception.h"
 #include "File.h"
-#include <Exception.h>
+
+// clang-format: off
+const std::unordered_map<Tokenizer::TokenType, Text::ElementType> Text::typemap = {
+    { Tokenizer::TokenType::IMPLICIT_DEPENDENCY, ElementType::PUNCTUATION },
+    { Tokenizer::TokenType::ORDER_DEPENDENCY, ElementType::PUNCTUATION },
+    { Tokenizer::TokenType::SPACE, ElementType::WHITESPACE },
+    { Tokenizer::TokenType::VALIDATION_DEPENDENCY, ElementType::PUNCTUATION },
+};
+
+// clang-format: on
+
+Text::Element::Element(const Tokenizer::Token& token) {
+    const auto it = typemap.find(token.type);
+    if (it != typemap.end()) {
+        type = it->second;
+    }
+    else {
+        type = ElementType::WORD;
+    }
+    value = token.string();
+}
 
 std::string Text::Element::string() const {
     if (!is_word() && !is_file()) {
@@ -41,7 +61,7 @@ std::string Text::Element::string() const {
     }
     else {
         auto result = std::string{};
-        auto index = size_t{0};
+        auto index = size_t{ 0 };
 
         while (index < value.size()) {
             const auto special = value.find_first_of("$ \n", index);
@@ -98,7 +118,7 @@ Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
                 }
                 // fallthrough
             default:
-                emplace_back((token.is_whitespace() ? ElementType::WHITESPACE : ElementType::WORD), token.string());
+                emplace_back(token);
                 break;
         }
     }
@@ -148,7 +168,7 @@ void Text::collect_words(std::unordered_set<std::string>& words) const {
                 element.variable->value.collect_words(words);
             }
         }
-        else {
+        else if (element.is_word() || element.is_build_file()) {
             words.insert(element.value);
         }
     }
@@ -157,7 +177,7 @@ void Text::collect_words(std::unordered_set<std::string>& words) const {
 std::string Text::string() const {
     auto result = std::string{};
 
-    for (auto& element: *this) {
+    for (auto& element : *this) {
         result += element.string();
     }
 

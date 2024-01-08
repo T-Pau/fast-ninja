@@ -1,0 +1,29 @@
+arguments ..
+file input <>
+input
+end-of-inline-data
+file build.fninja <>
+rule a
+    command = a $in $out
+    flags = --verbose
+
+build output | implicit: a input | output
+end-of-inline-data
+file build/build.ninja {} <>
+top_source_directory = ..
+source_directory = ..
+top_build_directory = .
+build_directory = .
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja $top_source_directory
+    generator = 1
+
+build $build_directory/output | $build_directory/implicit : a $source_directory/input | $build_directory/output
+
+build ./build.ninja : fast-ninja ../build.fninja
+end-of-inline-data

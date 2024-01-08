@@ -55,12 +55,14 @@ class Text {
     enum class ElementType {
         BUILD_FILE,
         SOURCE_FILE,
+        PUNCTUATION,
         VARIABLE,
         WHITESPACE,
         WORD
     };
     class Element {
       public:
+        Element(const Tokenizer::Token& token);
         Element(ElementType type, std::string value) : type{type}, value{ std::move(value) } {}
 
         [[nodiscard]] bool is_build_file() const {return type == ElementType::BUILD_FILE;}
@@ -72,7 +74,7 @@ class Text {
 
         ElementType type;
         std::string value;
-        const Variable *variable = nullptr;
+        const Variable *variable{};
     };
 
     Text() = default;
@@ -82,6 +84,7 @@ class Text {
 
     void append(const Text& other) {elements.insert(elements.end(), other.elements.begin(), other.elements.end());}
     void emplace_back(ElementType type, std::string value) { elements.emplace_back(type, std::move(value)); }
+    void emplace_back(const Element& element) { elements.emplace_back(element); }
 
     void print(std::ostream& stream) const;
     void process(const File& file);
@@ -103,6 +106,8 @@ class Text {
 
   private:
     std::vector<Element> elements;
+
+    static const std::unordered_map<Tokenizer::TokenType, ElementType> typemap;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Text& text);
