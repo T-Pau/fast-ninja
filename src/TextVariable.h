@@ -1,5 +1,5 @@
 /*
-Build.cc --
+TextVariable.h -- 
 
 Copyright (C) Dieter Baron
 
@@ -29,31 +29,24 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#ifndef TEXTVARIABLE_H
+#define TEXTVARIABLE_H
 
+#include "Variable.h"
+#include "Text.h"
 
-#include "File.h"
+class TextVariable: public Variable {
+public:
+    TextVariable(std::string name, Tokenizer& tokenizer): Variable(std::move(name)), value(tokenizer) {}
+    TextVariable(std::string name, Text value): Variable(std::move(name)), value{std::move(value)} {}
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
-}
+    void resolve_sub(const ResolveContext& scope) override;
+    void print_definition(std::ostream& stream) const override;
+    void print_use(std::ostream& stream) const override {} // TODO
+    [[nodiscard]] std::string string() const override {return value.string();}
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
+private:
+    Text value;
+};
 
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
-
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
-
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
-}
+#endif //TEXTVARIABLE_H

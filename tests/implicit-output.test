@@ -10,20 +10,18 @@ rule a
 build output | implicit: a input | output
 end-of-inline-data
 file build/build.ninja {} <>
-top_source_directory = ..
-source_directory = ..
-top_build_directory = .
-build_directory = .
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
 
 rule a
     command = a $in $out
     flags = --verbose
 
 rule fast-ninja
-    command = fast-ninja $top_source_directory
+    command = fast-ninja ..
     generator = 1
 
-build $build_directory/output | $build_directory/implicit : a $source_directory/input | $build_directory/output
+build output | implicit : a ../input | output
 
-build ./build.ninja : fast-ninja ../build.fninja
+build build.ninja : fast-ninja ../build.fninja
 end-of-inline-data

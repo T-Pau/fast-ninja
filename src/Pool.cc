@@ -31,12 +31,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Pool.h"
 
+#include "File.h"
+
 Pool::Pool(std::string name, Tokenizer& tokenizer) : name{ std::move(name) } {
     tokenizer.expect(Tokenizer::TokenType::NEWLINE, Tokenizer::Skip::SPACE);
     bindings = Bindings{tokenizer};
 }
 
-void Pool::process(const File& file) { bindings.process(file); }
+void Pool::process(const File& file) { bindings.resolve(file); }
 
 void Pool::print(std::ostream& stream) const {
     stream << std::endl << "pool " << name << std::endl;

@@ -1,9 +1,12 @@
+#ifndef SCOPE_H
+#define SCOPE_H
+
 /*
-Build.cc --
+Scope.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <accelerate@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,31 +32,31 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#include "Bindings.h"
 
+class File;
 
-#include "File.h"
+class Scope {
+public:
+    Scope() = default;
+    explicit Scope(const Scope* next): next{next} {}
+    Scope(const Scope* next, Bindings bindings): next{next}, bindings{std::move(bindings)} {}
+    virtual ~Scope() = default;
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
-}
+    [[nodiscard]] bool is_top() const {return !next;}
+    [[nodiscard]] const Scope* top() const;
+    [[nodiscard]] const File* as_file() const;
+    [[nodiscard]] bool is_file() const {return as_file();}
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
+    [[nodiscard]] Variable* get_variable(const std::string& name) const;
+    [[nodiscard]] const File* get_file() const;
+    [[nodiscard]] bool is_output_file(const std::filesystem::path& file) const;
 
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
+    virtual void polymorphic() const {}
 
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
+protected:
+    const Scope* next{};
+    Bindings bindings{};
+};
 
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
-}
+#endif //SCOPE_H

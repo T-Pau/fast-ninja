@@ -1,5 +1,5 @@
 /*
-Build.cc --
+ResolveContext.cc --
 
 Copyright (C) Dieter Baron
 
@@ -29,31 +29,25 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#include "ResolveContext.h"
 
 
-#include "File.h"
+#include <Exception.h>
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
+ResolveContext ResolveContext::resolving(const std::string& name) const {
+    if (resolving_variables.contains(name)) {
+        throw Exception("circular variable definition involving %s", name.c_str()); // TODO: include all variables in cycle
+    }
+
+    auto new_context = *this;
+    new_context.resolving_variables.insert(name);
+    return new_context;
 }
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
-
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
-
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
-
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
+const Variable* ResolveContext::get_variable(const std::string& name) const {
+    const auto variable = scope.get_variable(name);
+    if (variable) {
+        variable->resolve(*this);
+    }
+    return variable;
 }

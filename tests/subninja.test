@@ -1,0 +1,48 @@
+arguments ..
+file input <>
+main input
+end-of-inline-data
+file src/input <>
+source input
+end-of-inline-data
+file build.fninja <>
+rule a
+    command = a $in $out
+    flags = --verbose
+
+build middle: a input
+build output: a middle
+
+subninja src/build.fninja
+end-of-inline-data
+file src/build.fninja <>
+build output: a ../output input ../input
+end-of-inline-data
+
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build middle : a ../input
+
+build output : a middle
+
+build build.ninja src/build.ninja : fast-ninja ../build.fninja ../src/build.fninja
+
+subninja src/build.ninja
+end-of-inline-data
+
+file build/src/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../src/build.fninja
+# Do not edit.
+
+build src/output : a output ../src/input ../input
+end-of-inline-data

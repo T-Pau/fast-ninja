@@ -1,9 +1,12 @@
+#ifndef FILENAMELIST_H
+#define FILENAMELIST_H
+
 /*
-Text.h --
+FilenameList.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <accelerate@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,46 +32,37 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef TEXT_H
-#define TEXT_H
+#include <utility>
 
-#include <string>
-#include <vector>
+#include "Filename.h"
+#include "FilenameWord.h"
 
-#include "Tokenizer.h"
-#include "Word.h"
-
-class ResolveContext;
-class Variable;
-
-/*
- element types:
- - text -> print literally
- - unresolved variable -> error on print
- - resolved scalar variable -> print as $name or ${complex.name}
- - resolved list variable -> expand on print
- - source filename -> print as $source_dir/name
- - build filename -> print as $build_dir/name
- */
-class Text {
+class FilenameList {
   public:
-    Text() = default;
-    Text(Tokenizer& tokenizer);
-    explicit Text(std::string value): Text{std::vector<Word>{Word{std::move(value)}}} {}
-    explicit Text(std::vector<Word> elements): words{std::move(elements)} {}
+    enum Type {
+        BUILD,
+        INLINE,
+        SCOPED
+    };
+    explicit FilenameList(Tokenizer& tokenizer, Type type);
+    explicit FilenameList(Filename filename): filenames({std::move(filename)}) {}
+    explicit FilenameList(bool force_build = false): force_build{force_build} {}
+    explicit FilenameList(std::vector<Filename> filenames): filenames(std::move(filenames)) {}
 
-    void append(const Text& other) {words.insert(words.end(), other.words.begin(), other.words.end());}
-    void emplace_back(const Word& element) { words.emplace_back(element); }
-
-    void print(std::ostream& stream) const;
-    void resolve(const ResolveContext& scope);
-    [[nodiscard]] bool empty() const {return words.empty();}
+    void resolve(const ResolveContext& context);
+    [[nodiscard]] bool empty() const {return words.empty() && filenames.empty();}
+    void serialize(std::ostream& stream) const;
     [[nodiscard]] std::string string() const;
+    void collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const;
+
+    void collect_filenames(std::vector<Filename>& collector) const {collector.insert(collector.end(), filenames.begin(), filenames.end());}
 
   private:
-    std::vector<Word> words;
+    std::vector<FilenameWord> words;
+    std::vector<Filename> filenames;
+    bool force_build{false};
 };
 
-std::ostream& operator<<(std::ostream& stream, const Text& text);
+std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list);
 
-#endif // TEXT_H
+#endif // FILENAMELIST_H

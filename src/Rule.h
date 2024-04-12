@@ -34,21 +34,22 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
-#include "Bindings.h"
+#include "ScopedDirective.h"
 #include "Variable.h"
 
-class Rule {
+class File;
+
+class Rule: public ScopedDirective {
   public:
     Rule() = default;
-    Rule(std::string name, Tokenizer& tokenizer);
-    Rule(std::string name, Bindings bindings): name{std::move(name)}, bindings{std::move(bindings)} {}
+    Rule(const File* file, std::string name, Tokenizer& tokenizer);
+    Rule(const File* file, std::string name, Bindings bindings);
 
     void process(const File& file);
     void print(std::ostream& stream) const;
 
   private:
     std::string name;
-    Bindings bindings;
 };
 
 #endif // RULE_H

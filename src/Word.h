@@ -1,9 +1,13 @@
+#ifndef WORD_H
+#define WORD_H
+#include <variant>
+
 /*
-Pool.h -- 
+Word.h --
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <accelerate@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,27 +33,38 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef POOL_H
-#define POOL_H
-
 #include <string>
+#include <vector>
+#include <unordered_set>
 
-#include "Bindings.h"
-#include "Variable.h"
+#include "FilenameWord.h"
+#include "Filename.h"
+#include "VariableReference.h"
 
-class File;
+class FilenameWord;
 
-class Pool {
-public:
-    Pool() = default;
-    Pool(std::string name, Tokenizer& tokenizer);
+class Word {
+  public:
+    Word(Tokenizer& tokenizer);
+    explicit Word(std::string text) {elements.emplace_back(std::move(text));};
+    explicit Word(VariableReference variable_reference) {elements.emplace_back(variable_reference);}
+    Word() = default;
 
-    void process(const File& file);
+    [[nodiscard]] bool empty() const { return elements.empty(); }
+
+    [[nodiscard]] std::string string() const;
     void print(std::ostream& stream) const;
 
-private:
-    std::string name;
-    Bindings bindings;
+    void resolve(const ResolveContext& scope);
+
+  private:
+    void append_string(std::string string) { elements.emplace_back(std::move(string)); }
+    void append_variable(std::string string) { elements.emplace_back(VariableReference(std::move(string))); }
+    void append_filename(FilenameWord filname) {elements.emplace_back(std::move(filname));}
+
+    std::vector<std::variant<std::string, VariableReference, FilenameWord>> elements;
 };
 
-#endif //POOL_H
+std::ostream& operator<<(std::ostream& stream, const Word& word);
+
+#endif // WORD_H

@@ -35,11 +35,20 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../foundation/lib/Util.h"
 #include "Exception.h"
+#include "FilenameVariable.h"
+#include "TextVariable.h"
 #include "Tokenizer.h"
 
-File::File(const std::filesystem::path& filename, const std::filesystem::path& build_directory, const File* previous) : source_filename{ filename }, previous{ previous }, build_directory{ build_directory.lexically_normal() } {
+File::File(const std::filesystem::path& filename, const std::filesystem::path& build_directory, const File* next) : Scope(next), source_filename{ filename }, build_directory{ build_directory.lexically_normal() } {
     source_directory = filename.parent_path();
     build_filename = replace_extension(build_directory / source_filename.filename(), "ninja");
+
+    bindings.add(std::make_shared<FilenameVariable>("build_directory", FilenameList{Filename{Filename::Type::BUILD, build_directory.string()}}));
+    bindings.add(std::make_shared<FilenameVariable>("source_directory", FilenameList{Filename{Filename::Type::SOURCE, source_directory.string()}}));
+    if (is_top()) {
+        bindings.add(std::make_shared<FilenameVariable>("top_build_directory", FilenameList{Filename{Filename::Type::BUILD, build_directory.string()}}));
+        bindings.add(std::make_shared<FilenameVariable>("top_source_directory", FilenameList{Filename{Filename::Type::SOURCE,source_directory.string()}}));
+    }
 
     parse(filename);
 
@@ -50,30 +59,33 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
 
 void File::process() {
     if (is_top()) {
-        rules["fast-ninja"] = Rule("fast-ninja", Bindings({
-            Variable("command", false, Text{std::vector<Text::Element>{
-                    Text::Element{Text::ElementType::WORD, "fast-ninja"},
-                    Text::Element{Text::ElementType::WHITESPACE, " "},
-                    Text::Element{Text::ElementType::VARIABLE, "top_source_directory"}
-                }}),
-            Variable("generator", false, Text("1"))
-        }));
-        auto outputs = Text{};
-        auto inputs = Text{};
+        auto bindings = Bindings{};
+        bindings.add(std::shared_ptr<Variable>(new TextVariable{"command", Text{std::vector<Word>{
+                Word{"fast-ninja"},
+                Word{" "},
+                Word{source_directory}
+            }}}));
+        bindings.add(std::shared_ptr<Variable>(new TextVariable{"generator", Text{"1"}}));
+
+        rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);
+        auto outputs = std::vector<Filename>{};
+        auto inputs = std::vector<Filename>{};
         add_generator_build(outputs, inputs);
 
-        builds.emplace_back("fast-ninja", outputs, inputs, Bindings{});
+        builds.emplace_back(this, "fast-ninja", Dependencies{FilenameList{outputs}}, Dependencies{FilenameList{inputs}}, Bindings{});
+    }
+
+    auto top_file = const_cast<File*>(top()->as_file());
+    if (!top_file) {
+        throw Exception("internal error: top scope is not a file");
     }
 
     for (auto& build : builds) {
         build.process_outputs(*this);
-        auto current_outputs = build.get_outputs();
-        outputs.insert(current_outputs.begin(), current_outputs.end());
+        build.collect_output_files(top_file->outputs);
     }
 
-    for (auto& pair : bindings) {
-        pair.second.process(*this);
-    }
+    bindings.resolve(*this);
 
     for (auto& pair : rules) {
         pair.second.process(*this);
@@ -83,7 +95,8 @@ void File::process() {
         build.process(*this);
     }
 
-    defaults.process(*this);
+    auto context = ResolveContext{*this};
+    defaults.resolve(context);
 
     for (const auto& file : subfiles) {
         file->process();
@@ -91,7 +104,7 @@ void File::process() {
 }
 
 const Rule* File::find_rule(const std::string& name) const {
-    for (auto file = this; file; file = file->previous) {
+    for (auto file = this; file; file = file->next_file()) {
         const auto& it = file->rules.find(name);
 
         if (it != rules.end()) {
@@ -103,11 +116,11 @@ const Rule* File::find_rule(const std::string& name) const {
 }
 
 const Variable* File::find_variable(const std::string& name) const {
-    for (auto file = this; file; file = file->previous) {
+    for (auto file = this; file; file = file->next_file()) {
         const auto& it = file->bindings.find(name);
 
         if (it != file->bindings.end()) {
-            return &it->second;
+            return it->second.get();
         }
     }
 
@@ -122,18 +135,10 @@ void File::create_output() const {
         throw Exception("can't create output '%s'", build_filename.c_str());
     }
 
-    auto top_file = this;
-    while (!top_file->is_top()) {
-        top_file = top_file->previous;
-    }
-
-    stream << "top_source_directory = " << top_file->source_directory.string() << std::endl;
-    stream << "source_directory = " << source_directory.string() << std::endl;
-    stream << "top_build_directory = " << top_file->build_directory.string() << std::endl;
-    stream << "build_directory = " << build_directory.string() << std::endl;
+    stream << "# This file is automatically created by fast-ninja from " << source_filename.string() << std::endl;
+    stream << "# Do not edit." << std::endl;
 
     if (!bindings.empty()) {
-        stream << std::endl;
         bindings.print(stream, "");
     }
 
@@ -215,13 +220,15 @@ void File::parse(const std::filesystem::path& filename) {
                 case Tokenizer::TokenType::ASSIGN:
                 case Tokenizer::TokenType::ASSIGN_LIST:
                 case Tokenizer::TokenType::BEGIN_SCOPE:
+                case Tokenizer::TokenType::BEGIN_FILENAME:
                 case Tokenizer::TokenType::COLON:
+                case Tokenizer::TokenType::END_FILENAME:
                 case Tokenizer::TokenType::END_SCOPE:
                 case Tokenizer::TokenType::IMPLICIT_DEPENDENCY:
                 case Tokenizer::TokenType::ORDER_DEPENDENCY:
                 case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
                 case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                    throw Exception("invalid token");
+                    throw Exception("unexpected %s",token.type_name().c_str());
             }
         } catch (Exception& ex) {
             std::cerr << tokenizer.file_name().string() << ":" << tokenizer.current_line_number() << ": " << ex.what() << std::endl;
@@ -233,21 +240,23 @@ void File::parse(const std::filesystem::path& filename) {
 void File::parse_assignment(Tokenizer& tokenizer, const std::string& variable_name) {
     const auto token = tokenizer.next(Tokenizer::Skip::SPACE);
 
-    auto is_list = false;
-
-    if (token.type == Tokenizer::TokenType::ASSIGN_LIST) {
-        is_list = true;
+    if (token.type == Tokenizer::TokenType::ASSIGN) {
+        bindings.add(std::shared_ptr<Variable>(new TextVariable(variable_name, tokenizer)));
     }
-    else if (token.type != Tokenizer::TokenType::ASSIGN) {
+    else if (token.type == Tokenizer::TokenType::ASSIGN_LIST) {
+        bindings.add(std::shared_ptr<Variable>(new FilenameVariable(variable_name, tokenizer)));
+    }
+    else {
         throw Exception("invalid assignment");
     }
-
-    bindings.add(variable_name, Variable{ variable_name, is_list, tokenizer });
 }
 
-void File::parse_build(Tokenizer& tokenizer) { builds.emplace_back(tokenizer); }
+void File::parse_build(Tokenizer& tokenizer) { builds.emplace_back(this, tokenizer); }
 
-void File::parse_default(Tokenizer& tokenizer) { defaults.append(Text(tokenizer, Tokenizer::TokenType::NEWLINE)); }
+void File::parse_default(Tokenizer& tokenizer) {
+    // TODO: append in case of multiple defaults statements
+    defaults = FilenameList{tokenizer, FilenameList::BUILD};
+}
 
 void File::parse_pool(Tokenizer& tokenizer) {
     tokenizer.skip_space();
@@ -264,29 +273,30 @@ void File::parse_rule(Tokenizer& tokenizer) {
     if (token.type != Tokenizer::TokenType::WORD) {
         throw Exception("name expected");
     }
-    rules[token.string()] = Rule(token.string(), tokenizer);
+    rules[token.string()] = Rule(this, token.string(), tokenizer);
 }
 
 void File::parse_subninja(Tokenizer& tokenizer) {
-    auto text = Text{ tokenizer, Tokenizer::TokenType::NEWLINE };
+    auto text = Text{ tokenizer };
 
     subninjas.emplace_back(text.string());
 }
 
-void File::add_generator_build(Text& outputs, Text& inputs) const {
-    if (!outputs.empty()) {
-        outputs.emplace_back(Text::ElementType::WHITESPACE, " ");
-    }
-    outputs.emplace_back(Text::ElementType::WORD, build_filename.string());
-    if (!inputs.empty()) {
-        inputs.emplace_back(Text::ElementType::WHITESPACE, " ");
-    }
-    inputs.emplace_back(Text::ElementType::WORD, source_filename.string());
-    for (auto& file: includes) {
-        inputs.emplace_back(Text::ElementType::WHITESPACE, " ");
-        inputs.emplace_back(Text::ElementType::WORD, file);
-    }
+void File::add_generator_build(std::vector<Filename>& outputs, std::vector<Filename>& inputs) const {
+    outputs.emplace_back(Filename::Type::BUILD, build_filename);
+    inputs.emplace_back(Filename::Type::COMPLETE, source_filename);
     for (const auto& file: subfiles) {
         file->add_generator_build(outputs, inputs);
     }
+}
+
+const File* File::next_file() const {
+    if (!next) {
+        return {};
+    }
+
+    if (auto file = dynamic_cast<const File *>(next)) {
+        return file;
+    }
+    throw Exception("internal error: file contained in non-file scope");
 }

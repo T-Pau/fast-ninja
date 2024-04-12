@@ -34,93 +34,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Exception.h"
 #include "File.h"
 
-// clang-format: off
-const std::unordered_map<Tokenizer::TokenType, Text::ElementType> Text::typemap = {
-    { Tokenizer::TokenType::IMPLICIT_DEPENDENCY, ElementType::PUNCTUATION },
-    { Tokenizer::TokenType::ORDER_DEPENDENCY, ElementType::PUNCTUATION },
-    { Tokenizer::TokenType::SPACE, ElementType::WHITESPACE },
-    { Tokenizer::TokenType::VALIDATION_DEPENDENCY, ElementType::PUNCTUATION },
-};
-
-// clang-format: on
-
-Text::Element::Element(const Tokenizer::Token& token) {
-    const auto it = typemap.find(token.type);
-    if (it != typemap.end()) {
-        type = it->second;
-    }
-    else {
-        type = ElementType::WORD;
-    }
-    value = token.string();
-}
-
-std::string Text::Element::string() const {
-    if (!is_word() && !is_file()) {
-        return value;
-    }
-    else {
-        auto result = std::string{};
-        auto index = size_t{ 0 };
-
-        while (index < value.size()) {
-            const auto special = value.find_first_of("$ \n", index);
-            if (special != std::string::npos) {
-                result += value.substr(index, special - index);
-                result += "$";
-                result += value[special];
-                index = special + 1;
-            }
-            else {
-                result += value.substr(index);
-                break;
-            }
-        }
-
-        if (is_build_file()) {
-            return "$build_directory/" + result;
-        }
-        else if (is_source_file()) {
-            return "$source_directory/" + result;
-        }
-        else {
-            return result;
-        }
-    }
-}
-
-Text::Text(Tokenizer& tokenizer, Tokenizer::TokenType terminator) {
+Text::Text(Tokenizer& tokenizer) {
     tokenizer.skip_space();
-    while (const auto token = tokenizer.next()) {
-        switch (token.type) {
-            case Tokenizer::TokenType::NEWLINE:
-                if (terminator == Tokenizer::TokenType::COLON) {
-                    throw Exception("missing ':'");
-                }
-                else if (terminator == Tokenizer::TokenType::END_SCOPE) {
-                    emplace_back(ElementType::WHITESPACE, " ");
-                }
-                else {
-                    return;
-                }
-                break;
-
-            case Tokenizer::TokenType::END_SCOPE:
-                return;
-
-            case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                emplace_back(ElementType::VARIABLE, token.value);
-                break;
-
-            case Tokenizer::TokenType::COLON:
-                if (terminator == Tokenizer::TokenType::COLON) {
-                    return;
-                }
-                // fallthrough
-            default:
-                emplace_back(token);
-                break;
+    while (true) {
+        words.emplace_back(tokenizer);
+        auto token = tokenizer.next();
+        if (token.type == Tokenizer::TokenType::NEWLINE) {
+            break;
         }
+        words.emplace_back(token.string());
     }
 }
 
@@ -130,54 +52,21 @@ std::ostream& operator<<(std::ostream& stream, const Text& text) {
 }
 
 void Text::print(std::ostream& stream) const {
-    for (const auto& element : *this) {
-        if (element.is_variable()) {
-            if (element.variable) {
-                element.variable->print_use(stream);
-            }
-            else {
-                stream << "$" << element.value;
-            }
-        }
-        else {
-            stream << element.string();
-        }
+    for (auto& word: words) {
+        stream << word;
     }
 }
 
-void Text::process(const File& file) {
-    for (auto& element : *this) {
-        if (element.is_variable()) {
-            element.variable = file.find_variable(element.value);
-        }
-        else if (element.is_word()) {
-            if (file.is_output(element.value)) {
-                element.type = ElementType::BUILD_FILE;
-            }
-            else if (std::filesystem::exists(file.source_directory / element.value)) {
-                element.type = ElementType::SOURCE_FILE;
-            }
-        }
-    }
-}
-
-void Text::collect_words(std::unordered_set<std::string>& words) const {
-    for (auto& element : *this) {
-        if (element.is_variable()) {
-            if (element.variable && element.variable->is_list) {
-                element.variable->value.collect_words(words);
-            }
-        }
-        else if (element.is_word() || element.is_build_file()) {
-            words.insert(element.value);
-        }
+void Text::resolve(const ResolveContext& context) {
+    for (auto& word : words) {
+        word.resolve(context);
     }
 }
 
 std::string Text::string() const {
     auto result = std::string{};
 
-    for (auto& element : *this) {
+    for (auto& element : words) {
         result += element.string();
     }
 

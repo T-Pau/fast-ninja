@@ -1,0 +1,71 @@
+file:
+    < statement NEWLINE > +
+
+statement:
+    variable-assignment
+    | rule
+    | build
+    | default
+    | pool
+    | include
+    | subninja
+
+build:
+    BUILD filename-list ':' IDENTIFIER filename-list NEWLINE [ BEGIN_SCOPE variable-assignments END_SCOPE ]
+
+rule:
+    RULE IDENTIFIER NEWLINE BEGIN_SCOPE variable-assignments END_SCOPE
+
+pool:
+    POOL IDENTIFIER NEWLINE BEGIN_SCOPE variable-assignments END_SCOPE
+
+default:
+    DEFAULT filename-list
+
+include:
+    INCLUDE filename-list
+
+subninja:
+    SUBNINJA filename-list
+
+variable-assignments:
+    < variable-assignment NEWLINE > +
+
+variable-assignment:
+    variable '=' variable-text
+    | single-filename-variable ':=' filename
+    | multi-filename-variable ':=' [ filename-list ] BEGIN_SCOPE multi-line-filename-list END_SCOPE
+
+filename-list:
+    filename
+    | multi-file-variable
+    | filename-list SPACE filename
+    | filename-list SPACE multi-file-variable
+
+multi-line-filename-list:
+    filename
+    | multi-file-variable
+    | filename-list [SPACE | NEWLINE] filename
+    | filename-list [SPACE | NEWLINE] multi-file-variable
+
+filename:
+    literal-filename
+    explicit-filename
+    | single-file-variable
+
+literal-filename:
+    < WORD | variable > +
+
+variable-text:
+    < variable-text-component > *
+
+variable-text-component:
+    WORD
+    | explicit-filename
+    | SPACE
+    | variable
+    | single-filename-variable
+    | multi-filename-variable
+
+explicit-filename:
+    '{{' < WORD SPACE > + '}}'

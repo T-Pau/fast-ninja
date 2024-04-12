@@ -31,7 +31,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Bindings.h"
 
-
+#include "FilenameVariable.h"
+#include "TextVariable.h"
 #include <Exception.h>
 
 Bindings::Bindings(Tokenizer& tokenizer) {
@@ -47,31 +48,30 @@ Bindings::Bindings(Tokenizer& tokenizer) {
         }
         auto name = token.string();
         token = tokenizer.next(Tokenizer::Skip::SPACE);
-        if (token.type != Tokenizer::TokenType::ASSIGN && token.type != Tokenizer::TokenType::ASSIGN_LIST) {
+        if (token.type == Tokenizer::TokenType::ASSIGN) {
+            variables[name] = std::unique_ptr<Variable>(new TextVariable{name, tokenizer});
+        }
+        else if (token.type == Tokenizer::TokenType::ASSIGN_LIST) {
+            variables[name] = std::unique_ptr<Variable>(new FilenameVariable{name, tokenizer});
+        }
+        else {
             throw Exception("assignment expected");
         }
-        variables[name] = Variable(name, token.type == Tokenizer::TokenType::ASSIGN_LIST, tokenizer);
-    }
-}
-
-Bindings::Bindings(const std::vector<Variable>& variable_list) {
-    for (auto& variable: variable_list) {
-        variables[variable.name] = variable;
     }
 }
 
 void Bindings::print(std::ostream& stream, const std::string& indent) const {
     for (auto& pair : *this) {
-        if (!pair.second.is_list) {
+        if (!pair.second->is_filename()) {
             stream << indent;
-            pair.second.print_definition(stream);
-            stream << std::endl;
+            pair.second->print_definition(stream);
         }
     }
 }
 
-void Bindings::process(const File& file) {
+void Bindings::resolve(const Scope& scope) {
+    auto context = ResolveContext{scope};
     for (auto& pair : variables) {
-        pair.second.process(file);
+        pair.second->resolve(context);
     }
 }

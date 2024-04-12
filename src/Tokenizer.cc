@@ -58,10 +58,12 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
     {'@', CharacterType::PUNCTUATION},
     {'_', CharacterType::SIMPLE_VARIABLE},
     {'|', CharacterType::PUNCTUATION},
+    {'{', CharacterType::PUNCTUATION},
+    {'}', CharacterType::PUNCTUATION}
 };
 // clang-format on
 
-Tokenizer::Tokenizer(const std::filesystem::path& filename): filename{filename}, source{filename} {
+Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{ filename } {
     if (source.fail()) {
         throw Exception("can't open '%s'", filename.c_str());
     }
@@ -90,6 +92,9 @@ std::string Tokenizer::Token::type_name(TokenType type) {
         case TokenType::BEGIN_SCOPE:
             return "{";
 
+        case TokenType::BEGIN_FILENAME:
+            return "{{";
+
         case TokenType::BUILD:
             return "build";
 
@@ -101,6 +106,9 @@ std::string Tokenizer::Token::type_name(TokenType type) {
 
         case TokenType::END:
             return "END";
+
+        case TokenType::END_FILENAME:
+            return "}}";
 
         case TokenType::END_SCOPE:
             return "}";
@@ -138,6 +146,8 @@ std::string Tokenizer::Token::type_name(TokenType type) {
         case TokenType::WORD:
             return "word";
     }
+
+    throw Exception("invalid token type");
 }
 
 Tokenizer::Token Tokenizer::expect(TokenType type, Skip skip) {
@@ -229,6 +239,17 @@ Tokenizer::Token Tokenizer::get_next() {
                     default:
                         source.unget();
                         return Token{ TokenType::IMPLICIT_DEPENDENCY };
+                }
+
+            case '{':
+            case '}':
+                beggining_of_line = false;
+                if (source.get() == c) {
+                    return Token{ c == '{' ? TokenType::BEGIN_FILENAME : TokenType::END_FILENAME };
+                }
+                else {
+                    source.unget();
+                    return tokenize_word(c);
                 }
 
             case '$':

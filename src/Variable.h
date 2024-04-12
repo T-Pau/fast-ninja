@@ -34,25 +34,33 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
-#include "Text.h"
 #include "Tokenizer.h"
 
-
-class File;
+class ResolveContext;
+class FilenameVariable;
+class TextVariable;
 
 class Variable {
 public:
+    explicit Variable(std::string name): name{std::move(name)} {}
     Variable() = default;
-    Variable(std::string name, bool is_list, Tokenizer& tokenizer);
-    Variable(std::string name, bool is_list, Text value): name{std::move(name)}, is_list{is_list}, value{std::move(value)} {}
+    virtual ~Variable() = default;
 
-    void process(const File& file);
-    void print_definition(std::ostream& stream) const;
-    void print_use(std::ostream& stream) const;
+    [[nodiscard]] const FilenameVariable* as_filename() const;
+    [[nodiscard]] const TextVariable* as_text() const;
+    [[nodiscard]] bool is_filename() const {return as_filename();}
+    [[nodiscard]] bool is_text() const {return as_text();}
+
+    void resolve(const ResolveContext& context);
+    virtual void resolve_sub(const ResolveContext& context) = 0;
+    virtual void print_definition(std::ostream& stream) const = 0;
+    virtual void print_use(std::ostream& stream) const = 0;
+    [[nodiscard]] virtual std::string string() const = 0;
 
     std::string name;
-    bool is_list = false;
-    Text value;
+
+private:
+    bool resolved{false};
 };
 
 

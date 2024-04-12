@@ -33,29 +33,28 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUILD_H
 
 #include <unordered_set>
-#include <vector>
 
 #include "Bindings.h"
+#include "Dependencies.h"
 #include "Rule.h"
+#include "ScopedDirective.h"
 
-class Build {
+class Build: public ScopedDirective {
   public:
-    Build() = default;
-    explicit Build(Tokenizer& tokenizer);
-    Build(std::string rule_name, Text outputs, Text inputs, Bindings bindings): rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)}, bindings{std::move(bindings)} {}
+    explicit Build(const File* file, Tokenizer& tokenizer);
+    Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings);
 
     void process(const File& file);
     void process_outputs(const File& file);
     void print(std::ostream& stream) const;
 
-    [[nodiscard]] std::unordered_set<std::string> get_outputs() const;
+    void collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const {outputs.collect_output_files(output_files);}
 
   private:
     const Rule* rule{};
     std::string rule_name;
-    Text outputs;
-    Text inputs;
-    Bindings bindings;
+    Dependencies outputs;
+    Dependencies inputs;
 };
 
 #endif // BUILD_H

@@ -1,5 +1,5 @@
 /*
-Build.cc --
+ResolveContext.h -- 
 
 Copyright (C) Dieter Baron
 
@@ -29,31 +29,26 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#ifndef RESOLVECONTEXT_H
+#define RESOLVECONTEXT_H
+
+#include <unordered_set>
+
+#include "Scope.h"
+
+class ResolveContext {
+public:
+    explicit ResolveContext(const Scope& scope): scope{scope} {}
+
+    [[nodiscard]] ResolveContext resolving(const std::string& name) const;
+    [[nodiscard]] const Variable* get_variable(const std::string& name) const;
+
+    const Scope& scope;
+
+private:
+    std::unordered_set<std::string> resolving_variables;
+};
 
 
-#include "File.h"
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
-}
-
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
-
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
-
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
-
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
-}
+#endif //RESOLVECONTEXT_H

@@ -29,22 +29,19 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SCOPEDDIRECTIVE_H
-#define SCOPEDDIRECTIVE_H
+#ifndef SCOPED_DIRECTIVE_H
+#define SCOPED_DIRECTIVE_H
 
-#include <unordered_map>
-
+#include "Scope.h"
 #include "Variable.h"
 
-class ScopedDirective {
+class ScopedDirective: public Scope {
   public:
+    ScopedDirective() = default;
+    explicit ScopedDirective(const File* file);
+    ScopedDirective(const File* file, Bindings bindings);
+
     void process(const File& file);
-
-  protected:
-    void parse_bindings(Tokenizer& tokenizer);
-
-    std::unordered_map<std::string, Variable> bindings;
 };
 
-
-#endif // SCOPEDDIRECTIVE_H
+#endif // SCOPED_DIRECTIVE_H

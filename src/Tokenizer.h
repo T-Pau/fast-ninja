@@ -61,11 +61,13 @@ public:
     enum class TokenType {
         ASSIGN,
         ASSIGN_LIST,
+        BEGIN_FILENAME,
         BEGIN_SCOPE,
         BUILD,
         COLON,
         DEFAULT,
         END,
+        END_FILENAME,
         END_SCOPE,
         IMPLICIT_DEPENDENCY,
         INCLUDE,
@@ -86,6 +88,7 @@ public:
         Token(TokenType type, std::string value) : type{type}, value{std::move(value)} {}
 
         explicit operator bool() const {return type != TokenType::END;}
+        [[nodiscard]] bool is_variable_refrence() const {return type == TokenType::VARIABLE_REFERENCE;}
         [[nodiscard]] bool is_whitespace() const {return type == TokenType::SPACE || type == TokenType::NEWLINE;}
         [[nodiscard]] std::string string() const;
         [[nodiscard]] std::string type_name() const {return type_name(type);}

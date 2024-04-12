@@ -34,31 +34,30 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <map>
 
+#include "Tokenizer.h"
 #include "Variable.h"
+
+class Scope;
 
 class Bindings {
   public:
     Bindings() = default;
     explicit Bindings(Tokenizer& tokenizer);
-    explicit Bindings(const std::vector<Variable>& variable_list);
 
     void print(std::ostream& stream, const std::string& indent) const;
-    void process(const File& file);
-    void add(const std::string& name, Variable variable) {variables[name] = std::move(variable);}
+    void resolve(const Scope& scope);
+    void add(std::shared_ptr<Variable> variable) {variables[variable->name] = std::move(variable);}
 
     [[nodiscard]] auto empty() const {return variables.empty();}
     auto begin() { return variables.begin(); }
-
     auto end() { return variables.end(); }
-
     [[nodiscard]] auto begin() const { return variables.begin(); }
-
     [[nodiscard]] auto end() const { return variables.end(); }
     auto find(const std::string& name) {return variables.find(name);}
-    auto find(const std::string& name) const {return variables.find(name);}
+    [[nodiscard]] auto find(const std::string& name) const {return variables.find(name);}
 
   private:
-    std::map<std::string, Variable> variables;
+    std::map<std::string, std::shared_ptr<Variable>> variables;
 };
 
 #endif // BINDINGS_H

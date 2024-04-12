@@ -32,7 +32,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FILE_H
 #define FILE_H
 
-#include "Bindings.h"
 #include <filesystem>
 #include <string>
 #include <map>
@@ -42,23 +41,26 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Build.h"
 #include "Pool.h"
 #include "Rule.h"
+#include "Scope.h"
 #include "Variable.h"
 
 
 class Tokenizer;
 
-class File {
+class File: public Scope {
   public:
     File() = default;
-    explicit File(const std::filesystem::path& filename, const std::filesystem::path& build_directory = ".", const File* previous = nullptr);
+    explicit File(const std::filesystem::path& filename, const std::filesystem::path& build_directory = ".", const File* next = {});
 
     void process();
-    [[nodiscard]] bool is_output(const std::string& word) const {return outputs.contains(word);}
-    [[nodiscard]] bool is_top() const {return !previous;}
+    [[nodiscard]] bool is_output(const std::filesystem::path& file) const {return outputs.contains(file.lexically_normal());}
     [[nodiscard]] const Rule* find_rule(const std::string& name) const;
     [[nodiscard]] const Variable* find_variable(const std::string& name) const;
 
     void create_output() const;
+
+    const File* next_file() const;
+    const File* top_file() const;
 
     std::filesystem::path source_directory;
     std::filesystem::path build_directory;
@@ -72,20 +74,17 @@ class File {
     void parse_rule(Tokenizer& tokenizer);
     void parse_subninja(Tokenizer& tokenizer);
 
-    void add_generator_build(Text& outputs, Text& inputs) const;
+    void add_generator_build(std::vector<Filename>& outputs, std::vector<Filename>& inputs) const;
 
     std::filesystem::path source_filename;
     std::filesystem::path build_filename;
 
-    const File* previous = nullptr;
-
-    std::unordered_set<std::string> outputs;
+    std::unordered_set<std::filesystem::path> outputs;
     std::set<std::string> includes;
     std::map<std::string, Rule> rules;
     std::map<std::string, Pool> pools;
     std::vector<Build> builds;
-    Bindings bindings;
-    Text defaults;
+    FilenameList defaults{true};
     std::vector<std::filesystem::path> subninjas;
     std::vector<std::unique_ptr<File>> subfiles;
 };

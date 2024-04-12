@@ -31,39 +31,20 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Variable.h"
 
-Variable::Variable(std::string name, bool is_list, Tokenizer& tokenizer) : name{ std::move(name) }, is_list{ is_list } {
-    auto terminator = Tokenizer::TokenType::NEWLINE;
-    tokenizer.skip_space();
-    if (is_list) {
-        auto token = tokenizer.next();
-        if (token.type == Tokenizer::TokenType::NEWLINE) {
-            token = tokenizer.next();
-            if (token.type == Tokenizer::TokenType::BEGIN_SCOPE) {
-                terminator = Tokenizer::TokenType::END_SCOPE;
-            }
-            else {
-                tokenizer.unget(token);
-                return;
-            }
-        }
-    }
+#include "FilenameVariable.h"
+#include "ResolveContext.h"
+#include "TextVariable.h"
 
-    value = Text{tokenizer, terminator};
+const FilenameVariable* Variable::as_filename() const {
+    return dynamic_cast<const FilenameVariable*>(this);
 }
 
-void Variable::process(const File& file) {
-    value.process(file);
-}
+const TextVariable* Variable::as_text() const { return dynamic_cast<const TextVariable*>(this); }
 
-void Variable::print_definition(std::ostream& stream) const {
-    stream << name << " = " << value;
-}
-
-void Variable::print_use(std::ostream& stream) const {
-    if (is_list) {
-        stream << value;
+void Variable::resolve(const ResolveContext& context) {
+    if (resolved) {
+        return;
     }
-    else {
-        stream << "${" << name << "}";
-    }
+    resolve_sub(context.resolving(name));
+    resolved = true;
 }

@@ -31,8 +31,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ScopedDirective.h"
 
+#include "File.h"
 
-#include <Exception.h>
-
-void ScopedDirective::parse_bindings(Tokenizer& tokenizer) {
-}
+ScopedDirective::ScopedDirective(const File* file): Scope(file) {}
+ScopedDirective::ScopedDirective(const File* file, Bindings bindings): Scope{file, std::move(bindings)} {}

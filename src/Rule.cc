@@ -31,12 +31,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Rule.h"
 
-Rule::Rule(std::string name, Tokenizer& tokenizer) : name{ std::move(name) } {
+#include "File.h"
+
+Rule::Rule(const File* file, std::string name, Tokenizer& tokenizer) : ScopedDirective{file}, name{std::move(name)} {
     tokenizer.expect(Tokenizer::TokenType::NEWLINE, Tokenizer::Skip::SPACE);
     bindings = Bindings{tokenizer};
 }
 
-void Rule::process(const File& file) { bindings.process(file); }
+Rule::Rule(const File* file, std::string name, Bindings bindings): ScopedDirective{file, std::move(bindings)}, name{std::move(name)} {}
+
+void Rule::process(const File& file) { bindings.resolve(file); }
 
 void Rule::print(std::ostream& stream) const {
     stream << std::endl << "rule " << name << std::endl;

@@ -1,5 +1,5 @@
 /*
-Build.cc --
+FilenameVariable.h --
 
 Copyright (C) Dieter Baron
 
@@ -29,31 +29,28 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#ifndef FILENAMEVARIABLE_H
+#define FILENAMEVARIABLE_H
 
+#include "FilenameList.h"
+#include "ResolveContext.h"
+#include "Variable.h"
 
-#include "File.h"
+#include <utility>
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
-}
+class FilenameVariable : public Variable {
+  public:
+    FilenameVariable(std::string name, Tokenizer& tokenizer);
+    FilenameVariable(std::string name, FilenameList value): Variable(std::move(name)), value{std::move(value)} {}
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
+    void resolve_sub(const ResolveContext& context) override {value.resolve(context);}
+    void print_definition(std::ostream& stream) const override {} // TODO
+    void print_use(std::ostream& stream) const override {} // TODO
+    [[nodiscard]] std::string string() const override {return value.string();}
+    void collect_filenames(std::vector<Filename>& collector) const {return value.collect_filenames(collector);}
 
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
+private:
+    FilenameList value;
+};
 
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
-
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
-}
+#endif // FILENAMEVARIABLE_H

@@ -1,5 +1,5 @@
 /*
-Build.cc --
+TextVariable.cc -- 
 
 Copyright (C) Dieter Baron
 
@@ -29,31 +29,12 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Build.h"
+#include "TextVariable.h"
 
-
-#include "File.h"
-
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
-    tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
-    rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
+void TextVariable::resolve_sub(const ResolveContext& context) {
+    value.resolve(context);
 }
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
-
-void Build::process(const File& file) {
-    inputs.resolve(file);
-    bindings.resolve(file);
-}
-
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
-
-void Build::print(std::ostream& stream) const {
-    stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;
-    bindings.print(stream, "    ");
+void TextVariable::print_definition(std::ostream& stream) const {
+    stream << name << " = " << value << std::endl;
 }
