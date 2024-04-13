@@ -41,7 +41,7 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
     force_build = (type == Type::BUILD);
 
     while (true) {
-        auto word = FilenameWord{tokenizer};
+        auto word = FilenameWord{tokenizer, force_build};
         if (!word.empty()) {
             words.emplace_back(word);
         }

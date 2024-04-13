@@ -35,7 +35,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameVariable.h"
 
-FilenameWord::FilenameWord(Tokenizer& tokenizer) {
+FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{force_build} {
     std::string string;
 
     auto first = true;
@@ -97,6 +97,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer) {
 }
 
 void FilenameWord::resolve(const ResolveContext& context) {
+    auto contains_filename_variable = false;
     for (auto& element : elements) {
         if (std::holds_alternative<VariableReference>(element)) {
             auto& variable_reference = std::get<VariableReference>(element);
@@ -104,51 +105,67 @@ void FilenameWord::resolve(const ResolveContext& context) {
             if (variable_reference.is_text_variable()) {
                 element = variable_reference.variable->string();
             }
+            else {
+                contains_filename_variable = true;
+            }
         }
+    }
+    if (!contains_filename_variable) {
+        auto name = std::string();
+        for (const auto& element: elements) {
+            name += std::get<std::string>(element);
+        }
+        filename = Filename{force_build ? Filename::Type::BUILD : Filename::Type::UNKNOWN, name};
+        filename->resolve(context);
     }
 }
 
 void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
-    std::string prefix;
-    std::string postfix;
-    auto current_string = &prefix;
-    const FilenameVariable* filename_variable{};
-
-    for (auto& element: elements) {
-        if (std::holds_alternative<std::string>(element)) {
-            *current_string += std::get<std::string>(element);
-        }
-        else {
-            auto variable = std::get<VariableReference>(element);
-            if (variable.is_filename_variable()) {
-                if (filename_variable) {
-                    throw Exception("multiple filename variables in filename not allowed");
-                }
-                else {
-                    filename_variable = variable.variable->as_filename();
-                    current_string = &postfix;
-                }
-            }
-            else {
-                *current_string += variable.variable->string();
-            }
-        }
-    }
-
-    if (filename_variable) {
-        if (prefix.empty() && postfix.empty()) {
-            filename_variable->collect_filenames(filenames);
-        }
-        else {
-            std::vector<Filename> inner_filenames;
-            filename_variable->collect_filenames(inner_filenames);
-            for (auto& filename : inner_filenames) {
-                filename.name = prefix + filename.name + postfix;
-            }
-            filenames.insert(filenames.end(), inner_filenames.begin(), inner_filenames.end());
-        }
+    if (filename) {
+        filenames.emplace_back(*filename);
     }
     else {
-        filenames.emplace_back(prefix);
+        std::string prefix;
+        std::string postfix;
+        auto current_string = &prefix;
+        const FilenameVariable* filename_variable{};
+
+        for (auto& element : elements) {
+            if (std::holds_alternative<std::string>(element)) {
+                *current_string += std::get<std::string>(element);
+            }
+            else {
+                auto variable = std::get<VariableReference>(element);
+                if (variable.is_filename_variable()) {
+                    if (filename_variable) {
+                        throw Exception("multiple filename variables in filename not allowed");
+                    }
+                    else {
+                        filename_variable = variable.variable->as_filename();
+                        current_string = &postfix;
+                    }
+                }
+                else {
+                    *current_string += variable.variable->string();
+                }
+            }
+        }
+
+        if (filename_variable) {
+            if (prefix.empty() && postfix.empty()) {
+                filename_variable->collect_filenames(filenames);
+            }
+            else {
+                std::vector<Filename> inner_filenames;
+                filename_variable->collect_filenames(inner_filenames);
+                for (auto& filename : inner_filenames) {
+                    filename.name = prefix + filename.name + postfix;
+                }
+                filenames.insert(filenames.end(), inner_filenames.begin(), inner_filenames.end());
+            }
+        }
+        else {
+            filenames.emplace_back(prefix);
+        }
     }
 }

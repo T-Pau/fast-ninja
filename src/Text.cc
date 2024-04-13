@@ -66,8 +66,8 @@ void Text::resolve(const ResolveContext& context) {
 std::string Text::string() const {
     auto result = std::string{};
 
-    for (auto& element : words) {
-        result += element.string();
+    for (auto& word : words) {
+        result += word.string();
     }
 
     return result;

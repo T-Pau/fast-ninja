@@ -40,7 +40,7 @@ class FilenameList;
 
 class FilenameWord {
   public:
-    explicit FilenameWord(Tokenizer& tokenizer);
+    explicit FilenameWord(Tokenizer& tokenizer, bool force_build = false);
     explicit FilenameWord(std::string word): elements{std::move(word)} {}
 
     [[nodiscard]] bool empty() const {return elements.empty();}
@@ -50,6 +50,8 @@ class FilenameWord {
 
 private:
     std::vector<std::variant<std::string, VariableReference>> elements;
+    std::optional<Filename> filename;
+    bool force_build{false};
 };
 
 #endif // EXPLICITFILENAME_H
