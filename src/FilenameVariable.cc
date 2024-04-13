@@ -40,7 +40,6 @@ FilenameVariable::FilenameVariable(std::string name, Tokenizer& tokenizer) : Var
         token = tokenizer.next();
         if (token.type == Tokenizer::TokenType::BEGIN_SCOPE) {
             value = FilenameList(tokenizer, FilenameList::SCOPED);
-            tokenizer.expect(Tokenizer::TokenType::END_SCOPE);
         }
         else {
             tokenizer.unget(token);
