@@ -45,7 +45,7 @@ class Bindings {
     explicit Bindings(Tokenizer& tokenizer);
 
     void print(std::ostream& stream, const std::string& indent) const;
-    void resolve(const Scope& scope);
+    void resolve(const Scope& scope, bool expand_variables = true);
     void add(std::shared_ptr<Variable> variable) {variables[variable->name] = std::move(variable);}
 
     [[nodiscard]] auto empty() const {return variables.empty();}

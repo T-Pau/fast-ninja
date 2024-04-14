@@ -44,7 +44,7 @@ class FilenameVariable : public Variable {
     FilenameVariable(std::string name, FilenameList value): Variable(std::move(name)), value{std::move(value)} {}
 
     void resolve_sub(const ResolveContext& context) override {value.resolve(context);}
-    void print_definition(std::ostream& stream) const override {} // TODO
+    void print_definition(std::ostream& stream) const override;
     void print_use(std::ostream& stream) const override {} // TODO
     [[nodiscard]] std::string string() const override {return value.string();}
     void collect_filenames(std::vector<Filename>& collector) const {return value.collect_filenames(collector);}

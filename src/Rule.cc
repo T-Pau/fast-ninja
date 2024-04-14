@@ -40,7 +40,9 @@ Rule::Rule(const File* file, std::string name, Tokenizer& tokenizer) : ScopedDir
 
 Rule::Rule(const File* file, std::string name, Bindings bindings): ScopedDirective{file, std::move(bindings)}, name{std::move(name)} {}
 
-void Rule::process(const File& file) { bindings.resolve(file); }
+void Rule::process(const File& file) {
+    bindings.resolve(file, false);
+}
 
 void Rule::print(std::ostream& stream) const {
     stream << std::endl << "rule " << name << std::endl;

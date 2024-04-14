@@ -38,12 +38,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class ResolveContext {
 public:
-    explicit ResolveContext(const Scope& scope): scope{scope} {}
+    explicit ResolveContext(const Scope& scope, bool expand_variables = false): scope{scope}, expand_variables{expand_variables} {}
 
     [[nodiscard]] ResolveContext resolving(const std::string& name) const;
     [[nodiscard]] const Variable* get_variable(const std::string& name) const;
 
     const Scope& scope;
+    bool expand_variables{false};
 
 private:
     std::unordered_set<std::string> resolving_variables;

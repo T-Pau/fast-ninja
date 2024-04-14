@@ -22,6 +22,12 @@ end-of-inline-data
 file build/build.ninja {} <>
 # This file is automatically created by fast-ninja from ../build.fninja
 # Do not edit.
+
+build_directory = .
+source_directory = ..
+sources = ../input ../input-2 output
+top_build_directory = .
+top_source_directory = ..
 version = 2
 
 rule a

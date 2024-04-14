@@ -62,15 +62,13 @@ Bindings::Bindings(Tokenizer& tokenizer) {
 
 void Bindings::print(std::ostream& stream, const std::string& indent) const {
     for (auto& pair : *this) {
-        if (!pair.second->is_filename()) {
-            stream << indent;
-            pair.second->print_definition(stream);
-        }
+        stream << indent;
+        pair.second->print_definition(stream);
     }
 }
 
-void Bindings::resolve(const Scope& scope) {
-    auto context = ResolveContext{scope};
+void Bindings::resolve(const Scope& scope, bool expand_variables) {
+    auto context = ResolveContext{scope, expand_variables};
     for (auto& pair : variables) {
         pair.second->resolve(context);
     }

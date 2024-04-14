@@ -51,3 +51,7 @@ FilenameVariable::FilenameVariable(std::string name, Tokenizer& tokenizer) : Var
         value = FilenameList(tokenizer, FilenameList::INLINE);
     }
 }
+
+void FilenameVariable::print_definition(std::ostream& stream) const {
+    stream << name << " = " << value << std::endl;
+}

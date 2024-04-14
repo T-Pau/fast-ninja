@@ -15,6 +15,11 @@ file build/build.ninja {} <>
 # This file is automatically created by fast-ninja from ../build.fninja
 # Do not edit.
 
+build_directory = .
+source_directory = ..
+top_build_directory = .
+top_source_directory = ..
+
 rule a
     command = a $in
 
@@ -32,6 +37,9 @@ end-of-inline-data
 file build/src/build.ninja {} <>
 # This file is automatically created by fast-ninja from ../src/build.fninja
 # Do not edit.
+
+build_directory = src
+source_directory = ../src
 
 build src/test : a src ../src . ..
 end-of-inline-data

@@ -136,7 +136,7 @@ void File::create_output() const {
     }
 
     stream << "# This file is automatically created by fast-ninja from " << source_filename.string() << std::endl;
-    stream << "# Do not edit." << std::endl;
+    stream << "# Do not edit." << std::endl << std::endl;
 
     if (!bindings.empty()) {
         bindings.print(stream, "");

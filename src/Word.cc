@@ -140,10 +140,12 @@ void Word::print(std::ostream& stream) const {
 void Word::resolve(const ResolveContext& context) {
     for (auto& element : elements) {
         if (std::holds_alternative<VariableReference>(element)) {
-            auto& variable_reference = std::get<VariableReference>(element);
-            variable_reference.resolve(context);
-            if (variable_reference.is_text_variable()) {
-                element = StringElement{variable_reference.variable->string(), true};
+            if (context.expand_variables) {
+                auto& variable_reference = std::get<VariableReference>(element);
+                variable_reference.resolve(context);
+                if (variable_reference.is_text_variable()) {
+                    element = StringElement{ variable_reference.variable->string(), true };
+                }
             }
         }
         else if (std::holds_alternative<FilenameWord>(element)) {
