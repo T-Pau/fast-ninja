@@ -43,11 +43,11 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
     source_directory = filename.parent_path();
     build_filename = replace_extension(build_directory / source_filename.filename(), "ninja");
 
-    bindings.add(std::make_shared<FilenameVariable>("build_directory", FilenameList{Filename{Filename::Type::BUILD, build_directory.string()}}));
-    bindings.add(std::make_shared<FilenameVariable>("source_directory", FilenameList{Filename{Filename::Type::SOURCE, source_directory.string()}}));
+    bindings.add(std::make_shared<FilenameVariable>("build_directory", FilenameList{Filename{Filename::Type::COMPLETE, build_directory.string()}}));
+    bindings.add(std::make_shared<FilenameVariable>("source_directory", FilenameList{Filename{Filename::Type::COMPLETE, source_directory.string()}}));
     if (is_top()) {
-        bindings.add(std::make_shared<FilenameVariable>("top_build_directory", FilenameList{Filename{Filename::Type::BUILD, build_directory.string()}}));
-        bindings.add(std::make_shared<FilenameVariable>("top_source_directory", FilenameList{Filename{Filename::Type::SOURCE,source_directory.string()}}));
+        bindings.add(std::make_shared<FilenameVariable>("top_build_directory", FilenameList{Filename{Filename::Type::COMPLETE, top_file()->build_directory.string()}}));
+        bindings.add(std::make_shared<FilenameVariable>("top_source_directory", FilenameList{Filename{Filename::Type::COMPLETE, top_file()->source_directory.string()}}));
     }
 
     parse(filename);
@@ -61,11 +61,11 @@ void File::process() {
     if (is_top()) {
         auto bindings = Bindings{};
         bindings.add(std::shared_ptr<Variable>(new TextVariable{"command", Text{std::vector<Word>{
-                Word{"fast-ninja"},
-                Word{" "},
-                Word{source_directory}
+                Word{"fast-ninja", false},
+                Word{" ", false},
+                Word{source_directory, true}
             }}}));
-        bindings.add(std::shared_ptr<Variable>(new TextVariable{"generator", Text{"1"}}));
+        bindings.add(std::shared_ptr<Variable>(new TextVariable{"generator", Text{"1", false}}));
 
         rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);
         auto outputs = std::vector<Filename>{};

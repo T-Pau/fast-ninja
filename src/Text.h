@@ -53,8 +53,8 @@ class Variable;
 class Text {
   public:
     Text() = default;
-    Text(Tokenizer& tokenizer);
-    explicit Text(std::string value): Text{std::vector<Word>{Word{std::move(value)}}} {}
+    explicit Text(Tokenizer& tokenizer);
+    explicit Text(std::string value, bool escape): Text{std::vector<Word>{Word{std::move(value), escape}}} {}
     explicit Text(std::vector<Word> elements): words{std::move(elements)} {}
 
     void append(const Text& other) {words.insert(words.end(), other.words.begin(), other.words.end());}

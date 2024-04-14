@@ -1,0 +1,18 @@
+arguments ..
+file build.fninja <>
+rule a
+    command = a rule build = "a$ b" |@ || | @
+end-of-inline-data
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+rule a
+    command = a rule build = "a$ b" |@ || | @
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build build.ninja : fast-ninja ../build.fninja
+end-of-inline-data

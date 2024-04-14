@@ -47,7 +47,7 @@ Word::Word(Tokenizer& tokenizer) {
 
         if (token.is_variable_refrence()) {
             if (!string.empty()) {
-                elements.emplace_back(string);
+                elements.emplace_back(StringElement{string, true});
                 string = "";
             }
             elements.emplace_back(VariableReference(token.value));
@@ -57,12 +57,12 @@ Word::Word(Tokenizer& tokenizer) {
             elements.emplace_back(FilenameWord(tokenizer));
         }
         else {
-            string += token.value;
+            string += token.string();
         }
     }
 
     if (!string.empty()) {
-        elements.emplace_back(string);
+        elements.emplace_back(StringElement{string, true});
     }
 }
 
@@ -82,8 +82,8 @@ void Word::print(std::ostream& stream) const {
     const FilenameWord* filename_word{};
 
     for (auto& element: elements) {
-        if (std::holds_alternative<std::string>(element)) {
-            *current_string += std::get<std::string>(element);
+        if (std::holds_alternative<StringElement>(element)) {
+            *current_string += std::get<StringElement>(element).string();
         }
         else if (std::holds_alternative<VariableReference>(element)) {
             auto& variable = std::get<VariableReference>(element);
@@ -143,7 +143,7 @@ void Word::resolve(const ResolveContext& context) {
             auto& variable_reference = std::get<VariableReference>(element);
             variable_reference.resolve(context);
             if (variable_reference.is_text_variable()) {
-                element = variable_reference.variable->string();
+                element = StringElement{variable_reference.variable->string(), true};
             }
         }
         else if (std::holds_alternative<FilenameWord>(element)) {
@@ -153,7 +153,25 @@ void Word::resolve(const ResolveContext& context) {
     }
 }
 
+
 std::ostream& operator<<(std::ostream& stream, const Word& word) {
     word.print(stream);
     return stream;
+}
+
+std::string Word::StringElement::string() const {
+    if (!escape || text.find(' ') == std::string::npos) {
+        return text;
+    }
+
+    std::string escaped;
+    for (char c : text) {
+        if (c == ' ') {
+            escaped += "$ ";
+        }
+        else {
+            escaped += c;
+        }
+    }
+    return escaped;
 }

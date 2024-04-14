@@ -45,8 +45,8 @@ class FilenameWord;
 
 class Word {
   public:
-    Word(Tokenizer& tokenizer);
-    explicit Word(std::string text) {elements.emplace_back(std::move(text));};
+    explicit Word(Tokenizer& tokenizer);
+    explicit Word(std::string text, bool escape) {elements.emplace_back(StringElement(std::move(text), escape));};
     explicit Word(VariableReference variable_reference) {elements.emplace_back(variable_reference);}
     Word() = default;
 
@@ -58,11 +58,19 @@ class Word {
     void resolve(const ResolveContext& scope);
 
   private:
-    void append_string(std::string string) { elements.emplace_back(std::move(string)); }
-    void append_variable(std::string string) { elements.emplace_back(VariableReference(std::move(string))); }
-    void append_filename(FilenameWord filname) {elements.emplace_back(std::move(filname));}
+    class StringElement {
+      public:
+        StringElement(std::string text, bool escape): text{std::move(text)}, escape{escape} {}
+        StringElement() = default;
 
-    std::vector<std::variant<std::string, VariableReference, FilenameWord>> elements;
+        [[nodiscard]] std::string string() const;
+
+      private:
+        std::string text;
+        bool escape{false};
+    };
+
+    std::vector<std::variant<StringElement, VariableReference, FilenameWord>> elements;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Word& word);

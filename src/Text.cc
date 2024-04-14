@@ -42,7 +42,7 @@ Text::Text(Tokenizer& tokenizer) {
         if (token.type == Tokenizer::TokenType::NEWLINE) {
             break;
         }
-        words.emplace_back(token.string());
+        words.emplace_back(token.string(), false);
     }
 }
 

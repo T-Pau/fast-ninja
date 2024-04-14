@@ -60,7 +60,7 @@ class File: public Scope {
     void create_output() const;
 
     const File* next_file() const;
-    const File* top_file() const;
+    const File* top_file() const {return top()->as_file();}
 
     std::filesystem::path source_directory;
     std::filesystem::path build_directory;
