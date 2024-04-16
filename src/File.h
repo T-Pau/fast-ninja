@@ -59,8 +59,8 @@ class File: public Scope {
 
     void create_output() const;
 
-    const File* next_file() const;
-    const File* top_file() const {return top()->as_file();}
+    [[nodiscard]] const File* next_file() const;
+    [[nodiscard]] const File* top_file() const {return top()->as_file();}
 
     std::filesystem::path source_directory;
     std::filesystem::path build_directory;
@@ -74,7 +74,10 @@ class File: public Scope {
     void parse_rule(Tokenizer& tokenizer);
     void parse_subninja(Tokenizer& tokenizer);
 
-    void add_generator_build(std::vector<Filename>& outputs, std::vector<Filename>& inputs) const;
+    void process_output();
+    void process_rest();
+
+    void add_generator_build(std::vector<Filename>& ninja_outputs, std::vector<Filename>& ninja_inputs) const;
 
     std::filesystem::path source_filename;
     std::filesystem::path build_filename;

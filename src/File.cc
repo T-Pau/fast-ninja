@@ -58,23 +58,22 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
 }
 
 void File::process() {
-    if (is_top()) {
-        auto bindings = Bindings{};
-        bindings.add(std::shared_ptr<Variable>(new TextVariable{"command", Text{std::vector<Word>{
-                Word{"fast-ninja", false},
-                Word{" ", false},
-                Word{source_directory, true}
-            }}}));
-        bindings.add(std::shared_ptr<Variable>(new TextVariable{"generator", Text{"1", false}}));
+    auto bindings = Bindings{};
+    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "command", Text{ std::vector<Word>{ Word{ "fast-ninja", false }, Word{ " ", false }, Word{ source_directory, true } } } }));
+    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "generator", Text{ "1", false } }));
 
-        rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);
-        auto outputs = std::vector<Filename>{};
-        auto inputs = std::vector<Filename>{};
-        add_generator_build(outputs, inputs);
+    rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);
+    auto ninja_outputs = std::vector<Filename>{};
+    auto ninja_inputs = std::vector<Filename>{};
+    add_generator_build(ninja_outputs, ninja_inputs);
 
-        builds.emplace_back(this, "fast-ninja", Dependencies{FilenameList{outputs}}, Dependencies{FilenameList{inputs}}, Bindings{});
-    }
+    builds.emplace_back(this, "fast-ninja", Dependencies{ FilenameList{ ninja_outputs } }, Dependencies{ FilenameList{ ninja_inputs } }, Bindings{});
 
+    process_output();
+    process_rest();
+}
+
+void File::process_output() { // NOLINT(misc-no-recursion)
     auto top_file = const_cast<File*>(top()->as_file());
     if (!top_file) {
         throw Exception("internal error: top scope is not a file");
@@ -85,6 +84,12 @@ void File::process() {
         build.collect_output_files(top_file->outputs);
     }
 
+    for (const auto& file : subfiles) {
+        file->process_output();
+    }
+}
+
+void File::process_rest() { // NOLINT(misc-no-recursion)
     bindings.resolve(*this);
 
     for (auto& pair : rules) {
@@ -99,7 +104,7 @@ void File::process() {
     defaults.resolve(context);
 
     for (const auto& file : subfiles) {
-        file->process();
+        file->process_rest();
     }
 }
 
@@ -127,7 +132,7 @@ const Variable* File::find_variable(const std::string& name) const {
     return nullptr;
 }
 
-void File::create_output() const {
+void File::create_output() const { // NOLINT(misc-no-recursion)
     std::filesystem::create_directories(build_directory);
     auto stream = std::ofstream(build_filename);
 
@@ -282,11 +287,11 @@ void File::parse_subninja(Tokenizer& tokenizer) {
     subninjas.emplace_back(text.string());
 }
 
-void File::add_generator_build(std::vector<Filename>& outputs, std::vector<Filename>& inputs) const {
-    outputs.emplace_back(Filename::Type::BUILD, build_filename);
-    inputs.emplace_back(Filename::Type::COMPLETE, source_filename);
+void File::add_generator_build(std::vector<Filename>& ninja_outputs, std::vector<Filename>& ninja_inputs) const { // NOLINT(misc-no-recursion)
+    ninja_outputs.emplace_back(Filename::Type::BUILD, build_filename);
+    ninja_inputs.emplace_back(Filename::Type::COMPLETE, source_filename);
     for (const auto& file: subfiles) {
-        file->add_generator_build(outputs, inputs);
+        file->add_generator_build(ninja_outputs, ninja_inputs);
     }
 }
 

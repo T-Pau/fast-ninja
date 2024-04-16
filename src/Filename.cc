@@ -39,7 +39,7 @@ void Filename::resolve(const ResolveContext& context) {
     const auto file = context.scope.get_file();
 
     if (type == Type::UNKNOWN) {
-        if (context.scope.is_output_file(file->build_directory / name)) {
+        if (context.scope.is_output_file((file->build_directory / name).lexically_normal())) {
             type = Type::BUILD;
         }
         if (std::filesystem::exists(file->source_directory / name)) {
