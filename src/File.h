@@ -53,7 +53,7 @@ class File: public Scope {
     explicit File(const std::filesystem::path& filename, const std::filesystem::path& build_directory = ".", const File* next = {});
 
     void process();
-    [[nodiscard]] bool is_output(const std::filesystem::path& file) const {return outputs.contains(file.lexically_normal());}
+    [[nodiscard]] bool is_output(const std::filesystem::path& file) const {return outputs.contains(file.lexically_normal().string());}
     [[nodiscard]] const Rule* find_rule(const std::string& name) const;
     [[nodiscard]] const Variable* find_variable(const std::string& name) const;
 
@@ -82,7 +82,7 @@ class File: public Scope {
     std::filesystem::path source_filename;
     std::filesystem::path build_filename;
 
-    std::unordered_set<std::filesystem::path> outputs;
+    std::unordered_set<std::string> outputs;
     std::set<std::string> includes;
     std::map<std::string, Rule> rules;
     std::map<std::string, Pool> pools;

@@ -53,7 +53,7 @@ class FilenameList {
     [[nodiscard]] bool empty() const {return words.empty() && filenames.empty();}
     void serialize(std::ostream& stream) const;
     [[nodiscard]] std::string string() const;
-    void collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const;
+    void collect_output_files(std::unordered_set<std::string>& output_files) const;
 
     void collect_filenames(std::vector<Filename>& collector) const {collector.insert(collector.end(), filenames.begin(), filenames.end());}
 

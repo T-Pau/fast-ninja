@@ -59,7 +59,7 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
 
 void File::process() {
     auto bindings = Bindings{};
-    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "command", Text{ std::vector<Word>{ Word{ "fast-ninja", false }, Word{ " ", false }, Word{ source_directory, true } } } }));
+    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "command", Text{ std::vector<Word>{ Word{ "fast-ninja", false }, Word{ " ", false }, Word{ source_directory.string(), true } } } }));
     bindings.add(std::shared_ptr<Variable>(new TextVariable{ "generator", Text{ "1", false } }));
 
     rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);

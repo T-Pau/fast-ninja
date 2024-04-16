@@ -115,10 +115,10 @@ std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list
     return stream;
 }
 
-void FilenameList::collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const {
+void FilenameList::collect_output_files(std::unordered_set<std::string>& output_files) const {
     for (auto& filename: filenames) {
         if (filename.type == Filename::Type::BUILD) {
-            output_files.insert(filename.full_name());
+            output_files.insert(filename.full_name().string());
         }
     }
 }

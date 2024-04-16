@@ -45,7 +45,7 @@ class Dependencies {
     Dependencies() = default;
 
     void resolve(const Scope& scope);
-    void collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const;
+    void collect_output_files(std::unordered_set<std::string>& output_files) const;
     void mark_as_build();
     void serialize(std::ostream& stream) const;
 

@@ -111,7 +111,7 @@ void Dependencies::serialize(std::ostream& stream) const {
     }
 }
 
-void Dependencies::collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const {
+void Dependencies::collect_output_files(std::unordered_set<std::string>& output_files) const {
     direct.collect_output_files(output_files);
     implicit.collect_output_files(output_files);
     order.collect_output_files(output_files);

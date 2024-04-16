@@ -35,6 +35,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Filename.h"
 
 #include <variant>
+#include <vector>
 
 #include "VariableReference.h"
 

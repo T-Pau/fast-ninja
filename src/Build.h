@@ -48,7 +48,7 @@ class Build: public ScopedDirective {
     void process_outputs(const File& file);
     void print(std::ostream& stream) const;
 
-    void collect_output_files(std::unordered_set<std::filesystem::path>& output_files) const {outputs.collect_output_files(output_files);}
+    void collect_output_files(std::unordered_set<std::string>& output_files) const {outputs.collect_output_files(output_files);}
 
   private:
     const Rule* rule{};
