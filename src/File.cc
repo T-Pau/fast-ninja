@@ -288,8 +288,8 @@ void File::parse_subninja(Tokenizer& tokenizer) {
 }
 
 void File::add_generator_build(std::vector<Filename>& ninja_outputs, std::vector<Filename>& ninja_inputs) const { // NOLINT(misc-no-recursion)
-    ninja_outputs.emplace_back(Filename::Type::BUILD, build_filename);
-    ninja_inputs.emplace_back(Filename::Type::COMPLETE, source_filename);
+    ninja_outputs.emplace_back(Filename::Type::BUILD, build_filename.string());
+    ninja_inputs.emplace_back(Filename::Type::COMPLETE, source_filename.string());
     for (const auto& file: subfiles) {
         file->add_generator_build(ninja_outputs, ninja_inputs);
     }
