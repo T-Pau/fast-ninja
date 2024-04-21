@@ -1,0 +1,19 @@
+arguments ..
+file build.fninja <>
+# empty file
+end-of-inline-data
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+build_directory = .
+source_directory = ..
+top_build_directory = .
+top_source_directory = ..
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build build.ninja : fast-ninja ../build.fninja
+end-of-inline-data

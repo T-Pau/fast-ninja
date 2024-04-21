@@ -187,7 +187,12 @@ Tokenizer::Token Tokenizer::get_next() {
     }
 
     while (true) {
-        switch (const auto c = source.get()) {
+        switch (auto c = source.get()) {
+            case '#':
+                while ((c = source.get()) != '\n' && c != EOF) {
+                }
+                // fallthrough
+
             case EOF:
                 return Token{ TokenType::END };
 
