@@ -54,7 +54,6 @@ public:
     void resolve(const ResolveContext& context);
     virtual void resolve_sub(const ResolveContext& context) = 0;
     virtual void print_definition(std::ostream& stream) const = 0;
-    virtual void print_use(std::ostream& stream) const = 0;
     [[nodiscard]] virtual std::string string() const = 0;
 
     std::string name;

@@ -42,7 +42,6 @@ public:
 
     void resolve_sub(const ResolveContext& scope) override;
     void print_definition(std::ostream& stream) const override;
-    void print_use(std::ostream& stream) const override {} // TODO
     [[nodiscard]] std::string string() const override {return value.string();}
 
 private:
