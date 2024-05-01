@@ -69,7 +69,7 @@ void Bindings::print(std::ostream& stream, const std::string& indent) const {
         variable_names.emplace_back(pair.first);
     }
 
-    sort(variable_names.begin(), variable_names.end());
+    std::sort(variable_names.begin(), variable_names.end());
 
     for (const auto& variable: variable_names) {
         stream << indent;

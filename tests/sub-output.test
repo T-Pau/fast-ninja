@@ -3,11 +3,13 @@ file src/input <>
 source input
 end-of-inline-data
 file build.fninja <>
+sources := src/sub-output
+
 rule a
     command = a $in $out
     flags = --verbose
 
-build top-output: a src/sub-output
+build top-output: a $sources
 
 subninja src/build.fninja
 end-of-inline-data
@@ -21,6 +23,7 @@ file build/build.ninja {} <>
 
 build_directory = .
 source_directory = ..
+sources = src/sub-output
 top_build_directory = .
 top_source_directory = ..
 
