@@ -31,8 +31,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Bindings.h"
 
-#include <Exception.h>
+#include <algorithm>
 
+#include "Exception.h"
 #include "FilenameVariable.h"
 #include "TextVariable.h"
 #include "VariableDependencies.h"
