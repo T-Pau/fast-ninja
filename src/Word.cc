@@ -51,6 +51,7 @@ Word::Word(Tokenizer& tokenizer) {
                 string = "";
             }
             elements.emplace_back(VariableReference(token.value));
+            resolved = false;
         }
         else if (token.type == Tokenizer::TokenType::BEGIN_FILENAME) {
             tokenizer.unget(token);
@@ -78,7 +79,7 @@ void Word::print(std::ostream& stream) const {
     std::string prefix;
     std::string postfix;
     std::string* current_string = &prefix;
-    const VariableReference* filename_variable{};
+    const FilenameVariable* filename_variable{};
     const FilenameWord* filename_word{};
 
     for (auto& element: elements) {
@@ -86,22 +87,20 @@ void Word::print(std::ostream& stream) const {
             *current_string += std::get<StringElement>(element).string();
         }
         else if (std::holds_alternative<VariableReference>(element)) {
-            auto& variable = std::get<VariableReference>(element);
-
-            if (variable.is_resolved()) {
-                if (variable.variable->is_text()) {
-                    *current_string += variable.variable->string();
-                }
-                else {
-                    if (filename_variable || filename_word) {
-                        throw Exception("multiple file names in word not allowed");
-                    }
-                    filename_variable = &variable;
-                    current_string = &postfix;
-                }
+            auto& variable_reference = std::get<VariableReference>(element);
+            *current_string += "$" + variable_reference.name;
+        }
+        else if (std::holds_alternative<const Variable*>(element)) {
+            auto& variable = std::get<const Variable*>(element);
+            if (variable->is_text()) {
+                    *current_string += variable->string();
             }
             else {
-                *current_string += "$" + variable.name;
+                if (filename_variable || filename_word) {
+                    throw Exception("multiple file names in word not allowed");
+                }
+                filename_variable = variable->as_filename();
+                current_string = &postfix;
             }
         }
         else if (std::holds_alternative<FilenameWord>(element)) {
@@ -116,7 +115,7 @@ void Word::print(std::ostream& stream) const {
     if (filename_variable || filename_word) {
         std::vector<Filename> filenames;
         if (filename_variable) {
-            filename_variable->variable->as_filename()->collect_filenames(filenames);
+            filename_variable->collect_filenames(filenames);
         }
         else {
             filename_word->collect_filenames(filenames);
@@ -138,13 +137,21 @@ void Word::print(std::ostream& stream) const {
 }
 
 void Word::resolve(const ResolveContext& context) {
+    resolved = true;
+
     for (auto& element : elements) {
         if (std::holds_alternative<VariableReference>(element)) {
             if (context.expand_variables) {
-                auto& variable_reference = std::get<VariableReference>(element);
-                variable_reference.resolve(context);
-                if (variable_reference.is_text_variable()) {
-                    element = StringElement{ variable_reference.variable->string(), true };
+                const auto& variable_reference = std::get<VariableReference>(element);
+                if (auto variable = variable_reference.resolve(context)) {
+                    if (!variable->is_resolved()) {
+                        context.result.add_unresolved_variable_use(variable->name);
+                        resolved = false;
+                    }
+                    element = variable;
+                }
+                else {
+                    throw Exception("unknown variable %s", variable_reference.name.c_str());
                 }
             }
         }

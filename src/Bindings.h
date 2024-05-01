@@ -32,7 +32,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef BINDINGS_H
 #define BINDINGS_H
 
-#include <map>
+#include <unordered_map>
 
 #include "Tokenizer.h"
 #include "Variable.h"
@@ -45,7 +45,7 @@ class Bindings {
     explicit Bindings(Tokenizer& tokenizer);
 
     void print(std::ostream& stream, const std::string& indent) const;
-    void resolve(const Scope& scope, bool expand_variables = true);
+    void resolve(const Scope& scope, bool expand_variables = true, bool classify_variables = true);
     void add(std::shared_ptr<Variable> variable) {variables[variable->name] = std::move(variable);}
 
     [[nodiscard]] auto empty() const {return variables.empty();}
@@ -57,7 +57,7 @@ class Bindings {
     [[nodiscard]] auto find(const std::string& name) const {return variables.find(name);}
 
   private:
-    std::map<std::string, std::shared_ptr<Variable>> variables;
+    std::unordered_map<std::string, std::shared_ptr<Variable>> variables;
 };
 
 #endif // BINDINGS_H

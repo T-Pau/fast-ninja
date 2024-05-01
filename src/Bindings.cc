@@ -31,9 +31,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Bindings.h"
 
+#include <Exception.h>
+
 #include "FilenameVariable.h"
 #include "TextVariable.h"
-#include <Exception.h>
+#include "VariableDependencies.h"
 
 Bindings::Bindings(Tokenizer& tokenizer) {
     auto token = tokenizer.next(Tokenizer::Skip::WHITESPACE);
@@ -61,15 +63,30 @@ Bindings::Bindings(Tokenizer& tokenizer) {
 }
 
 void Bindings::print(std::ostream& stream, const std::string& indent) const {
+    auto variable_names = std::vector<std::string>{};
+
     for (auto& pair : *this) {
+        variable_names.emplace_back(pair.first);
+    }
+
+    sort(variable_names.begin(), variable_names.end());
+
+    for (const auto& variable: variable_names) {
         stream << indent;
-        pair.second->print_definition(stream);
+        variables.find(variable)->second->print_definition(stream);
     }
 }
 
-void Bindings::resolve(const Scope& scope, bool expand_variables) {
-    auto context = ResolveContext{scope, expand_variables};
-    for (auto& pair : variables) {
-        pair.second->resolve(context);
+void Bindings::resolve(const Scope& scope, bool expand_variables, bool classify_filenames) {
+    auto dependencies = VariableDependencies(variables);
+    ResolveResult result;
+    auto context = ResolveContext{scope, result, expand_variables, classify_filenames};
+
+    while (!dependencies.finished()) {
+        for (auto& name: dependencies.get_next()) {
+            result.unresolved_used_variables.clear();
+            variables[name]->resolve(context);
+            dependencies.update(name, result.unresolved_used_variables);
+        }
     }
 }

@@ -40,9 +40,11 @@ public:
     TextVariable(std::string name, Tokenizer& tokenizer): Variable(std::move(name)), value(tokenizer) {}
     TextVariable(std::string name, Text value): Variable(std::move(name)), value{std::move(value)} {}
 
-    void resolve_sub(const ResolveContext& scope) override;
+    void resolve(const ResolveContext& scope) override;
     void print_definition(std::ostream& stream) const override;
     [[nodiscard]] std::string string() const override {return value.string();}
+    [[nodiscard]] bool contains_unknown_file() const override {return value.contains_unknown_file();}
+    bool is_resolved() const override {return value.is_resolved();}
 
 private:
     Text value;

@@ -31,7 +31,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TextVariable.h"
 
-void TextVariable::resolve_sub(const ResolveContext& context) {
+void TextVariable::resolve(const ResolveContext& context) {
     value.resolve(context);
 }
 

@@ -43,10 +43,12 @@ class FilenameVariable : public Variable {
     FilenameVariable(std::string name, Tokenizer& tokenizer);
     FilenameVariable(std::string name, FilenameList value): Variable(std::move(name)), value{std::move(value)} {}
 
-    void resolve_sub(const ResolveContext& context) override {value.resolve(context);}
+    void resolve(const ResolveContext& context) override {value.resolve(context);}
     void print_definition(std::ostream& stream) const override;
     [[nodiscard]] std::string string() const override {return value.string();}
+    [[nodiscard]] bool contains_unknown_file() const override {return value.contains_unknown_file();}
     void collect_filenames(std::vector<Filename>& collector) const {return value.collect_filenames(collector);}
+    bool is_resolved() const override {return value.is_resolved();}
 
 private:
     FilenameList value;

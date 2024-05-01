@@ -29,27 +29,27 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef RESOLVECONTEXT_H
-#define RESOLVECONTEXT_H
+#ifndef RESOLVE_CONTEXT_H
+#define RESOLVE_CONTEXT_H
 
 #include <unordered_set>
 
+#include "ResolveResult.h"
 #include "Scope.h"
 
 class ResolveContext {
 public:
-    explicit ResolveContext(const Scope& scope, bool expand_variables = false): scope{scope}, expand_variables{expand_variables} {}
+  // TODO: expand_variables should default to true
+    ResolveContext(const Scope& scope, ResolveResult& result, bool expand_variables = false, bool classify_filenames = true): scope{scope}, result{result}, expand_variables{expand_variables}, classify_filenames{classify_filenames} {}
 
-    [[nodiscard]] ResolveContext resolving(const std::string& name) const;
     [[nodiscard]] const Variable* get_variable(const std::string& name) const;
 
     const Scope& scope;
-    bool expand_variables{false};
-
-private:
-    std::unordered_set<std::string> resolving_variables;
+    bool expand_variables;
+    bool classify_filenames;
+    ResolveResult& result;
 };
 
 
 
-#endif //RESOLVECONTEXT_H
+#endif //RESOLVE_CONTEXT_H

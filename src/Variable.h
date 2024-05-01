@@ -50,16 +50,16 @@ public:
     [[nodiscard]] const TextVariable* as_text() const;
     [[nodiscard]] bool is_filename() const {return as_filename();}
     [[nodiscard]] bool is_text() const {return as_text();}
+    [[nodiscard]] virtual bool is_resolved() const = 0;
 
-    void resolve(const ResolveContext& context);
-    virtual void resolve_sub(const ResolveContext& context) = 0;
+    virtual void resolve(const ResolveContext& context) = 0;
     virtual void print_definition(std::ostream& stream) const = 0;
+    [[nodiscard]] virtual bool contains_unknown_file() const = 0;
     [[nodiscard]] virtual std::string string() const = 0;
 
     std::string name;
 
 private:
-    bool resolved{false};
 };
 
 

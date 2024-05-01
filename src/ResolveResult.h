@@ -1,5 +1,8 @@
+#ifndef FAST_NINJA_RESOLVERESULT_H
+#define FAST_NINJA_RESOLVERESULT_H
+
 /*
-VariableReference.cc -- 
+ResolveResult.h --
 
 Copyright (C) Dieter Baron
 
@@ -29,4 +32,13 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "VariableReference.h"
+#include <unordered_set>
+
+class ResolveResult {
+  public:
+    void add_unresolved_variable_use(const std::string &name) {unresolved_used_variables.insert(name);}
+    std::unordered_set<std::string> unresolved_used_variables;
+};
+
+
+#endif // FAST_NINJA_RESOLVERESULT_H

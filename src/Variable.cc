@@ -31,20 +31,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Variable.h"
 
+#include "Exception.h"
 #include "FilenameVariable.h"
 #include "ResolveContext.h"
 #include "TextVariable.h"
+
+#include <iostream>
 
 const FilenameVariable* Variable::as_filename() const {
     return dynamic_cast<const FilenameVariable*>(this);
 }
 
 const TextVariable* Variable::as_text() const { return dynamic_cast<const TextVariable*>(this); }
-
-void Variable::resolve(const ResolveContext& context) {
-    if (resolved) {
-        return;
-    }
-    resolve_sub(context.resolving(name));
-    resolved = true;
-}

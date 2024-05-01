@@ -1,5 +1,8 @@
+#ifndef VARIABLE_DEPENDENCIES_H
+#define VARIABLE_DEPENDENCIES_H
+
 /*
-VariableReference.cc -- 
+VariableDependencies.h --
 
 Copyright (C) Dieter Baron
 
@@ -29,4 +32,23 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "VariableReference.h"
+#include <string>
+#include <unordered_set>
+
+class Variable;
+
+class VariableDependencies {
+  public:
+    VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables);
+    void update(const std::string& name, const std::unordered_set<std::string>& dependencies);
+
+    [[nodiscard]] bool finished() const {return unresolved.empty();}
+    std::unordered_set<std::string> get_next() const;
+
+  private:
+    std::unordered_map<std::string, std::unordered_set<std::string>> unresolved;
+    std::unordered_set<std::string> resolved;
+    std::unordered_set<std::string> known_variables;
+};
+
+#endif // VARIABLE_DEPENDENCIES_H

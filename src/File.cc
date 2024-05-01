@@ -58,16 +58,18 @@ File::File(const std::filesystem::path& filename, const std::filesystem::path& b
 }
 
 void File::process() {
-    auto bindings = Bindings{};
-    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "command", Text{ std::vector<Word>{ Word{ "fast-ninja", false }, Word{ " ", false }, Word{ source_directory.string(), true } } } }));
-    bindings.add(std::shared_ptr<Variable>(new TextVariable{ "generator", Text{ "1", false } }));
+    auto generator_bindings = Bindings{};
+    generator_bindings.add(std::shared_ptr<Variable>(new TextVariable{ "command", Text{ std::vector<Word>{ Word{ "fast-ninja", false }, Word{ " ", false }, Word{ source_directory.string(), true } } } }));
+    generator_bindings.add(std::shared_ptr<Variable>(new TextVariable{ "generator", Text{ "1", false } }));
 
-    rules["fast-ninja"] = Rule(this, "fast-ninja", bindings);
+    rules["fast-ninja"] = Rule(this, "fast-ninja", generator_bindings);
     auto ninja_outputs = std::vector<Filename>{};
     auto ninja_inputs = std::vector<Filename>{};
     add_generator_build(ninja_outputs, ninja_inputs);
 
     builds.emplace_back(this, "fast-ninja", Dependencies{ FilenameList{ ninja_outputs } }, Dependencies{ FilenameList{ ninja_inputs } }, Bindings{});
+
+    bindings.resolve(*this, true, false);
 
     process_output();
     process_rest();
@@ -100,8 +102,12 @@ void File::process_rest() { // NOLINT(misc-no-recursion)
         build.process(*this);
     }
 
-    auto context = ResolveContext{*this};
+    ResolveResult result;
+    auto context = ResolveContext{*this, result};
     defaults.resolve(context);
+    if (!result.unresolved_used_variables.empty()) {
+        // TODO: error: unresolved variables
+    }
 
     for (const auto& file : subfiles) {
         file->process_rest();

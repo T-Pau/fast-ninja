@@ -38,6 +38,9 @@ Text::Text(Tokenizer& tokenizer) {
     tokenizer.skip_space();
     while (true) {
         words.emplace_back(tokenizer);
+        if (!words.back().is_resolved()) {
+            resolved = false;
+        }
         auto token = tokenizer.next();
         if (token.type == Tokenizer::TokenType::NEWLINE) {
             break;
@@ -58,8 +61,12 @@ void Text::print(std::ostream& stream) const {
 }
 
 void Text::resolve(const ResolveContext& context) {
+    resolved = true;
     for (auto& word : words) {
         word.resolve(context);
+        if (!word.is_resolved()) {
+            resolved = false;
+        }
     }
 }
 

@@ -12,6 +12,7 @@ ADD_EXECUTABLE(fast-ninja
         FilenameWord.cc
         Pool.cc
         ResolveContext.cc
+        ResolveResult.cc
         Rule.cc
         Scope.cc
         ScopedDirective.cc
@@ -19,6 +20,7 @@ ADD_EXECUTABLE(fast-ninja
         TextVariable.cc
         Tokenizer.cc
         Variable.cc
+        VariableDependencies.cc
         VariableReference.cc
         Word.cc
 )

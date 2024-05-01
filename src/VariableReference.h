@@ -39,15 +39,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class VariableReference {
   public:
-    explicit VariableReference(std::string name) : name{ std::move(name) } {}
+    explicit VariableReference(std::string name) : name{std::move(name)} {}
 
-    [[nodiscard]] bool is_filename_variable() const {return variable && variable->is_filename();}
-    [[nodiscard]] bool is_resolved() const {return variable;}
-    [[nodiscard]] bool is_text_variable() const {return variable && variable->is_text();}
-
-    void resolve(const ResolveContext& context);
-
-    const Variable* variable{};
+    [[nodiscard]] const Variable* resolve(const ResolveContext& context) const {return context.get_variable(name);}
 
     std::string name;
 };

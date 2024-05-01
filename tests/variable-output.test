@@ -1,0 +1,40 @@
+arguments ..
+file input <>
+input
+end-of-inline-data
+file build.fninja <>
+version = 2
+output := output-$version
+sources :=
+    input
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+build $output: a $sources
+end-of-inline-data
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+build_directory = .
+output = output-2
+source_directory = ..
+sources = ../input
+top_build_directory = .
+top_source_directory = ..
+version = 2
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build output-2 : a ../input
+
+build build.ninja : fast-ninja ../build.fninja
+end-of-inline-data

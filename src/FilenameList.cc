@@ -44,6 +44,9 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
         auto word = FilenameWord{tokenizer, force_build};
         if (!word.empty()) {
             words.emplace_back(word);
+            if (!word.is_resolved()) {
+                resolved = false;
+            }
         }
 
         if (scoped) {
@@ -69,15 +72,25 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
 }
 
 void FilenameList::resolve(const ResolveContext& context) {
+    resolved = true;
     for (auto& word : words) {
         word.resolve(context);
-        word.collect_filenames(filenames);
-    }
-    for (auto& filename: filenames) {
-        if (force_build) {
-            filename.type = Filename::Type::BUILD;
+        if (!word.is_resolved()) {
+            resolved = false;
         }
-        filename.resolve(context);
+    }
+    if (resolved) {
+        if (filenames.empty()) {
+            for (const auto& word: words) {
+                word.collect_filenames(filenames);
+            }
+        }
+        for (auto& filename : filenames) {
+            if (force_build) {
+                filename.type = Filename::Type::BUILD;
+            }
+            filename.resolve(context);
+        }
     }
 }
 

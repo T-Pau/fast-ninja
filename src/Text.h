@@ -64,9 +64,12 @@ class Text {
     void resolve(const ResolveContext& scope);
     [[nodiscard]] bool empty() const {return words.empty();}
     [[nodiscard]] std::string string() const;
+    [[nodiscard]] bool contains_unknown_file() const {return false;} // TODO
+    [[nodiscard]] bool is_resolved() const {return resolved;}
 
   private:
     std::vector<Word> words;
+    bool resolved{true};
 };
 
 std::ostream& operator<<(std::ostream& stream, const Text& text);

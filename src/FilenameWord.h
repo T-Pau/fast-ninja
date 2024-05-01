@@ -48,14 +48,16 @@ class FilenameWord {
     explicit FilenameWord(std::string word): elements{std::move(word)} {}
 
     [[nodiscard]] bool empty() const {return elements.empty();}
+    [[nodiscard]] bool is_resolved() const {return resolved;}
     void resolve(const ResolveContext& context);
 
     void collect_filenames(std::vector<Filename>& filenames) const;
 
 private:
-    std::vector<std::variant<std::string, VariableReference>> elements;
+    std::vector<std::variant<std::string, VariableReference, const Variable*>> elements;
     std::optional<Filename> filename;
     bool force_build{false};
+    bool resolved{true};
 };
 
 #endif // EXPLICITFILENAME_H

@@ -51,8 +51,10 @@ class FilenameList {
 
     void resolve(const ResolveContext& context);
     [[nodiscard]] bool empty() const {return words.empty() && filenames.empty();}
+    [[nodiscard]] bool is_resolved() const {return resolved;}
     void serialize(std::ostream& stream) const;
     [[nodiscard]] std::string string() const;
+    [[nodiscard]] bool contains_unknown_file() const {return false;} // TODO
     void collect_output_files(std::unordered_set<std::string>& output_files) const;
 
     void collect_filenames(std::vector<Filename>& collector) const {collector.insert(collector.end(), filenames.begin(), filenames.end());}
@@ -61,6 +63,7 @@ class FilenameList {
     std::vector<FilenameWord> words;
     std::vector<Filename> filenames;
     bool force_build{false};
+    bool resolved{true};
 };
 
 std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list);

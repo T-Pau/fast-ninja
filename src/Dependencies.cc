@@ -69,11 +69,15 @@ Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
 
 
 void Dependencies::resolve(const Scope& scope) {
-    auto context = ResolveContext{scope};
+    ResolveResult result;
+    auto context = ResolveContext{scope, result};
     direct.resolve(context);
     implicit.resolve(context);
     order.resolve(context);
     validation.resolve(context);
+    if (!result.unresolved_used_variables.empty()) {
+        throw Exception("unresolved variables"); // TODO: include list of variables
+    }
 }
 
 void Dependencies::serialize(std::ostream& stream) const {

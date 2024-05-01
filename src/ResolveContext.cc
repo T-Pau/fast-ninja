@@ -34,20 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Exception.h>
 
-ResolveContext ResolveContext::resolving(const std::string& name) const {
-    if (resolving_variables.contains(name)) {
-        throw Exception("circular variable definition involving %s", name.c_str()); // TODO: include all variables in cycle
-    }
-
-    auto new_context = *this;
-    new_context.resolving_variables.insert(name);
-    return new_context;
-}
-
 const Variable* ResolveContext::get_variable(const std::string& name) const {
     const auto variable = scope.get_variable(name);
-    if (variable) {
-        variable->resolve(*this);
-    }
     return variable;
 }

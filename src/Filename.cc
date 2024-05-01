@@ -36,6 +36,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "File.h"
 
 void Filename::resolve(const ResolveContext& context) {
+    if (!context.classify_filenames) {
+        return;
+    }
     const auto file = context.scope.get_file();
 
     if (type == Type::UNKNOWN) {

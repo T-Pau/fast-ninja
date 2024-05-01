@@ -52,6 +52,7 @@ class Word {
     Word() = default;
 
     [[nodiscard]] bool empty() const { return elements.empty(); }
+    [[nodiscard]] bool is_resolved() const {return resolved;}
 
     [[nodiscard]] std::string string() const;
     void print(std::ostream& stream) const;
@@ -71,7 +72,8 @@ class Word {
         bool escape{false};
     };
 
-    std::vector<std::variant<StringElement, VariableReference, FilenameWord>> elements;
+    std::vector<std::variant<StringElement, VariableReference, const Variable*, FilenameWord>> elements;
+    bool resolved{true};
 };
 
 std::ostream& operator<<(std::ostream& stream, const Word& word);
