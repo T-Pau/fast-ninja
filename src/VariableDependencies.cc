@@ -32,6 +32,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VariableDependencies.h"
 #include "Exception.h"
 
+#include <algorithm>
 #include <iostream>
 
 VariableDependencies::VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables) {

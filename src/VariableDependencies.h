@@ -32,7 +32,9 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 class Variable;
