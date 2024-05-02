@@ -81,6 +81,6 @@ std::filesystem::path Filename::full_name() const {
 }
 
 std::ostream& operator<<(std::ostream& stream, const Filename& file_name) {
-    stream << file_name.full_name().string();
+    stream << file_name.full_name().generic_string();
     return stream;
 }

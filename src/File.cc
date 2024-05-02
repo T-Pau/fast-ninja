@@ -146,7 +146,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
         throw Exception("can't create output '%s'", build_filename.c_str());
     }
 
-    stream << "# This file is automatically created by fast-ninja from " << source_filename.string() << std::endl;
+    stream << "# This file is automatically created by fast-ninja from " << source_filename.generic_string() << std::endl;
     stream << "# Do not edit." << std::endl << std::endl;
 
     if (!bindings.empty()) {
@@ -169,7 +169,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
     if (!subninjas.empty()) {
         stream << std::endl;
         for (auto& subninja : subninjas) {
-            stream << "subninja " << replace_extension(subninja, "ninja").string() << std::endl;
+            stream << "subninja " << replace_extension(subninja, "ninja").generic_string() << std::endl;
         }
     }
 
