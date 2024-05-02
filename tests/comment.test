@@ -1,6 +1,16 @@
 arguments ..
 file build.fninja <>
-# empty file
+# empty line
+
+rule a
+    command = a $in
+
+build out: a in
+# comment in build
+
+build out2: a in
+end-of-inline-data
+file in <>
 end-of-inline-data
 file build/build.ninja {} <>
 # This file is automatically created by fast-ninja from ../build.fninja
@@ -11,9 +21,16 @@ source_directory = ..
 top_build_directory = .
 top_source_directory = ..
 
+rule a
+    command = a $in
+
 rule fast-ninja
     command = fast-ninja ..
     generator = 1
+
+build out : a ../in
+
+build out2 : a ../in
 
 build build.ninja : fast-ninja ../build.fninja
 end-of-inline-data

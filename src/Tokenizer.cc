@@ -191,6 +191,10 @@ Tokenizer::Token Tokenizer::get_next() {
             case '#':
                 while ((c = source.get()) != '\n' && c != EOF) {
                 }
+                if (c != EOF) {
+                    source.unget();
+                    continue;
+                }
                 // fallthrough
 
             case EOF:
