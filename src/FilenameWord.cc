@@ -106,22 +106,24 @@ void FilenameWord::resolve(const ResolveContext& context) {
         if (std::holds_alternative<VariableReference>(element)) {
             auto& variable_reference = std::get<VariableReference>(element);
             if (auto variable = variable_reference.resolve(context)) {
-                if (variable->is_filename()) {
-                    contains_filename_variable = true;
-                }
-                if (!variable->is_resolved()) {
-                    context.result.add_unresolved_variable_use(variable->name);
-                    resolved = false;
-                }
                 element = variable;
             }
             else {
                 throw Exception("unknown variable %s", variable_reference.name.c_str());
             }
         }
+        if (std::holds_alternative<const Variable*>(element)) {
+            auto variable = std::get<const Variable*>(element);
+            if (variable->is_filename()) {
+                contains_filename_variable = true;
+            }
+            if (!variable->is_resolved()) {
+                context.result.add_unresolved_variable_use(variable->name);
+                resolved = false;
+            }
+        }
     }
 
-    // TODO: this shouldn't be neccessary
     if (resolved && !contains_filename_variable) {
         auto name = std::string();
         for (const auto& element: elements) {
@@ -186,7 +188,7 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
         }
         else {
-            filenames.emplace_back(prefix);
+            throw Exception("internal error: file name never resolved");
         }
     }
 }

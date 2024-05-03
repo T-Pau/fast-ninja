@@ -187,6 +187,17 @@ Tokenizer::Token Tokenizer::get_next() {
     }
 
     while (true) {
+        if (beggining_of_line) {
+            beggining_of_line = false;
+            auto new_indent = count_space();
+            // TODO: doesn't return space token for indent, is that okay?
+            if (new_indent != indent) {
+                const auto type = new_indent > indent ? TokenType::BEGIN_SCOPE : TokenType::END_SCOPE;
+                indent = new_indent;
+                return Token{ type };
+            }
+        }
+
         switch (auto c = source.get()) {
             case '#':
                 while ((c = source.get()) != '\n' && c != EOF) {
@@ -216,10 +227,7 @@ Tokenizer::Token Tokenizer::get_next() {
                 return Token{ TokenType::NEWLINE };
 
             case ' ':
-                if (auto token = tokenize_space()) {
-                    return *token;
-                }
-                break;
+                return tokenize_space();
 
             case ':':
                 beggining_of_line = false;
@@ -368,29 +376,21 @@ Tokenizer::Token Tokenizer::tokenize_dollar() {
     }
 }
 
-std::optional<Tokenizer::Token> Tokenizer::tokenize_space() {
-    auto length = 1;
+int Tokenizer::count_space() {
+    auto length = 0;
 
     while (source.get() == ' ') {
         length += 1;
     }
     source.unget();
 
-    if (beggining_of_line) {
-        if (length == indent) {
-            return {};
-        }
-        else {
-            const auto type = length > indent ? TokenType::BEGIN_SCOPE : TokenType::END_SCOPE;
-            beggining_of_line = false;
-            indent = length;
-            return Token{ type };
-        }
-    }
-    else {
-        return Token{ TokenType::SPACE, std::string(length, ' ') };
-    }
+    return length;
 }
+
+Tokenizer::Token Tokenizer::tokenize_space() {
+    return Token{ TokenType::SPACE, std::string(count_space() + 1, ' ') };
+}
+
 
 Tokenizer::Token Tokenizer::tokenize_word(int first_character) {
     std::string value{ static_cast<char>(first_character) };

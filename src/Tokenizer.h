@@ -115,9 +115,10 @@ private:
     static bool is_word(int c) {const auto ctype = type(c); return ctype == CharacterType::BRACED_VARIABLE || ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::OTHER;}
 
     [[nodiscard]] Token get_next();
+    [[nodiscard]] int count_space();
     [[nodiscard]] Token tokenize_braced_variable();
     [[nodiscard]] Token tokenize_dollar();
-    [[nodiscard]] std::optional<Token> tokenize_space();
+    [[nodiscard]] Token tokenize_space();
     [[nodiscard]] Token tokenize_variable(int first_character);
     [[nodiscard]] Token tokenize_word(int first_character);
 

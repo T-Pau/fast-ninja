@@ -44,9 +44,6 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
         auto word = FilenameWord{tokenizer, force_build};
         if (!word.empty()) {
             words.emplace_back(word);
-            if (!word.is_resolved()) {
-                resolved = false;
-            }
         }
 
         if (scoped) {
@@ -54,6 +51,9 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
             if (auto token = tokenizer.next()) {
                 if (token.type == Tokenizer::TokenType::END_SCOPE) {
                     return;
+                }
+                else if (word.empty()) {
+                    throw Exception("unterminated scope");
                 }
                 else {
                     tokenizer.unget(token);

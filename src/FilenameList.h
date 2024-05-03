@@ -63,7 +63,7 @@ class FilenameList {
     std::vector<FilenameWord> words;
     std::vector<Filename> filenames;
     bool force_build{false};
-    bool resolved{true};
+    bool resolved{false};
 };
 
 std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list);
