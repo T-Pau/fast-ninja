@@ -1,10 +1,6 @@
 arguments ..
-file input <>
-main input
-end-of-inline-data
-file src/input <>
-source input
-end-of-inline-data
+file input empty
+file src/input empty
 file build.fninja <>
 rule a
     command = a $in $out

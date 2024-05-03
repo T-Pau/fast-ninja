@@ -1,7 +1,5 @@
 arguments ..
-file src/input <>
-source input
-end-of-inline-data
+file src/input empty
 file build.fninja <>
 sources := src/sub-output
 

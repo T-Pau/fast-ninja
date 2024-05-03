@@ -1,7 +1,5 @@
 arguments ..
-file input <>
-input
-end-of-inline-data
+file input empty
 file build.fninja <>
 version = 2
 output := output-$version

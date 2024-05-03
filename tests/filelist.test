@@ -1,10 +1,6 @@
 arguments ..
-file input <>
-input
-end-of-inline-data
-file input-2 <>
-input 2
-end-of-inline-data
+file input empty
+file input-2 empty
 file build.fninja <>
 version = 2
 sources :=
