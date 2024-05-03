@@ -45,7 +45,7 @@ void Filename::resolve(const ResolveContext& context) {
         if (context.scope.is_output_file((file->build_directory / name).lexically_normal())) {
             type = Type::BUILD;
         }
-        if (std::filesystem::exists(file->source_directory / name)) {
+        else if (std::filesystem::exists(file->source_directory / name)) {
             type = Type::SOURCE;
         }
     }
