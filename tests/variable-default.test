@@ -1,0 +1,55 @@
+arguments ..
+file input empty
+file build.fninja <>
+built_files :=
+    output
+    sub/output
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+build output: a input
+
+default $built_files
+
+subninja sub/build.fninja
+end-of-inline-data
+file sub/build.fninja <>
+build output: a ../input
+end-of-inline-data
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+build_directory = .
+built_files = output sub/output
+source_directory = ..
+top_build_directory = .
+top_source_directory = ..
+
+rule a
+    command = a $in $out
+    flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build output : a ../input
+
+build build.ninja sub/build.ninja : fast-ninja ../build.fninja ../sub/build.fninja
+
+default output sub/output
+
+subninja sub/build.ninja
+end-of-inline-data
+file build/sub/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../sub/build.fninja
+# Do not edit.
+
+build_directory = sub
+source_directory = ../sub
+
+build sub/output : a ../input
+end-of-inline-data
