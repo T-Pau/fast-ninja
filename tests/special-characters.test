@@ -1,7 +1,7 @@
 arguments ..
 file build.fninja <>
 rule a
-    command = a rule build = "a$ b" |@ || | @
+    command = a rule build = "a$ b" |@ || | @ $$
 end-of-inline-data
 file build/build.ninja {} <>
 # This file is automatically created by fast-ninja from ../build.fninja
@@ -13,7 +13,7 @@ top_build_directory = .
 top_source_directory = ..
 
 rule a
-    command = a rule build = "a$ b" |@ || | @
+    command = a rule build = "a$ b" |@ || | @ $$
 
 rule fast-ninja
     command = fast-ninja ..

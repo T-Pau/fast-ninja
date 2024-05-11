@@ -169,14 +169,15 @@ std::ostream& operator<<(std::ostream& stream, const Word& word) {
 }
 
 std::string Word::StringElement::string() const {
-    if (!escape || text.find(' ') == std::string::npos) {
+    if (!escape || text.find_first_of(" $") == std::string::npos) {
         return text;
     }
 
     std::string escaped;
     for (char c : text) {
-        if (c == ' ') {
-            escaped += "$ ";
+        if (c == ' ' || c == '$') {
+            escaped += "$";
+            escaped += c;
         }
         else {
             escaped += c;
