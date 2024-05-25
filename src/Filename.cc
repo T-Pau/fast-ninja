@@ -52,7 +52,9 @@ void Filename::resolve(const ResolveContext& context) {
 
     switch (type) {
         case Type::BUILD:
-            prefix = file->build_directory;
+            if (prefix.empty()) {
+                prefix = file->build_directory;
+            }
             break;
 
         case Type::COMPLETE:
@@ -60,7 +62,9 @@ void Filename::resolve(const ResolveContext& context) {
             break;
 
         case Type::SOURCE:
-            prefix = file->source_directory;
+            if (prefix.empty()) {
+                prefix = file->source_directory;
+            }
             if (!std::filesystem::exists(full_name())) {
                 throw Exception("source file '" + full_name().string() + "' does not exist");
             }
@@ -78,6 +82,13 @@ std::filesystem::path Filename::full_name() const {
     else {
         return (prefix / name).lexically_normal();
     }
+}
+
+bool Filename::operator<(const Filename& other) const {
+    if (type != other.type) {
+        return type < other.type;
+    }
+    return name < other.name;
 }
 
 std::ostream& operator<<(std::ostream& stream, const Filename& file_name) {

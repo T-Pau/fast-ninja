@@ -55,6 +55,10 @@ public:
 
     [[nodiscard]] std::filesystem::path full_name() const;
 
+    // TODO: consider prefix?
+    bool operator<(const Filename& other) const;
+    bool operator==(const Filename& other) const {return type == other.type && name == other.name;}
+
     Type type{Type::UNKNOWN};
     std::string name;
     std::filesystem::path prefix;

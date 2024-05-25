@@ -83,7 +83,7 @@ class File: public Scope {
     std::filesystem::path build_filename;
 
     std::unordered_set<std::string> outputs;
-    std::set<std::string> includes;
+    std::set<Filename> includes;
     std::map<std::string, Rule> rules;
     std::map<std::string, Pool> pools;
     std::vector<Build> builds;

@@ -207,8 +207,11 @@ void File::parse(const std::filesystem::path& filename) {
 
                 case Tokenizer::TokenType::INCLUDE: {
                     auto name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE);
-                    includes.insert(name.string());
-                    tokenizers.emplace_back(name.string());
+                    auto include_filename = Filename(Filename::Type::SOURCE, name.string());
+                    auto result = ResolveResult();
+                    include_filename.resolve(ResolveContext(*this, result));
+                    includes.insert(include_filename);
+                    tokenizers.emplace_back(include_filename.full_name().string());
                     break;
                 }
 
@@ -295,6 +298,7 @@ void File::parse_subninja(Tokenizer& tokenizer) {
 
 void File::add_generator_build(std::vector<Filename>& ninja_outputs, std::vector<Filename>& ninja_inputs) const { // NOLINT(misc-no-recursion)
     ninja_outputs.emplace_back(Filename::Type::BUILD, build_filename.string());
+    ninja_inputs.insert(ninja_inputs.end(), includes.begin(), includes.end());
     ninja_inputs.emplace_back(Filename::Type::COMPLETE, source_filename.string());
     for (const auto& file: subfiles) {
         file->add_generator_build(ninja_outputs, ninja_inputs);
