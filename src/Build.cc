@@ -33,6 +33,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "File.h"
+#include <Exception.h>
 
 Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
     outputs = Dependencies{tokenizer, true};
@@ -45,6 +46,10 @@ Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
 Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
 
 void Build::process(const File& file) {
+    rule = file.find_rule(rule_name);
+    if (!rule) {
+        throw Exception("unknown rule %s", rule_name.c_str());
+    }
     inputs.resolve(file);
     bindings.resolve(file);
 }

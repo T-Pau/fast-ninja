@@ -7,7 +7,7 @@ rule a
     command = a $in $out
 
 build file: a input
-build output: file sub/file
+build output: a file sub/file
 
 subninja sub/build.fninja
 end-of-inline-data
@@ -32,7 +32,7 @@ rule fast-ninja
 
 build file : a ../input
 
-build output : file sub/file
+build output : a file sub/file
 
 build build.ninja sub/build.ninja : fast-ninja ../build.fninja ../sub/build.fninja
 
