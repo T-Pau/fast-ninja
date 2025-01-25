@@ -45,10 +45,19 @@ Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
 
 Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
 
+void Build::collect_output_files(std::unordered_set<std::string>& output_files) const {
+    if (!is_phony()) {
+        outputs.collect_output_files(output_files);
+    }
+}
+
+
 void Build::process(const File& file) {
-    rule = file.find_rule(rule_name);
-    if (!rule) {
-        throw Exception("unknown rule %s", rule_name.c_str());
+    if (!is_phony()) {
+        rule = file.find_rule(rule_name);
+        if (!rule) {
+            throw Exception("unknown rule %s", rule_name.c_str());
+        }
     }
     inputs.resolve(file);
     bindings.resolve(file);

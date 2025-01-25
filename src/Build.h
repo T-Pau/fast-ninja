@@ -44,11 +44,12 @@ class Build: public ScopedDirective {
     explicit Build(const File* file, Tokenizer& tokenizer);
     Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings);
 
+    [[nodiscard]] bool is_phony() const {return rule_name == "phony";}
     void process(const File& file);
     void process_outputs(const File& file);
     void print(std::ostream& stream) const;
 
-    void collect_output_files(std::unordered_set<std::string>& output_files) const {outputs.collect_output_files(output_files);}
+    void collect_output_files(std::unordered_set<std::string>& output_files) const;
 
   private:
     const Rule* rule{};

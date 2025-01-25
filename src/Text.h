@@ -66,6 +66,7 @@ class Text {
     [[nodiscard]] std::string string() const;
     [[nodiscard]] bool contains_unknown_file() const {return false;} // TODO
     [[nodiscard]] bool is_resolved() const {return resolved;}
+    [[nodiscard]] Location location() const {return {};} // TODO
 
   private:
     std::vector<Word> words;

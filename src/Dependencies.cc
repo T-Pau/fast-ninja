@@ -32,7 +32,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Dependencies.h"
 
 
+#include <DiagnosticOutput.h>
 #include <Exception.h>
+#include <sstream>
 
 Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
     auto type = is_build ? FilenameList::BUILD : FilenameList::INLINE;
@@ -62,7 +64,8 @@ Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
                 break;
 
             default:
-                throw Exception("internal error: %s not included in filename", token.type_name().c_str());
+                DiagnosticOutput::global.error({}, token.location) << "internal error: " << token.type_name() << " not included in filename";
+                throw Exception();
         }
     }
 }
@@ -76,7 +79,18 @@ void Dependencies::resolve(const Scope& scope) {
     order.resolve(context);
     validation.resolve(context);
     if (!result.unresolved_used_variables.empty()) {
-        throw Exception("unresolved variables"); // TODO: include list of variables
+        std::ostringstream str;
+        auto first = true;
+        for (const auto& variable : result.unresolved_used_variables) {
+            if (first) {
+                first = false;
+            }
+            else {
+                str << ", ";
+            }
+            str << variable;
+        }
+        throw Exception("unresolved variables: %s", str.str().c_str());
     }
 }
 

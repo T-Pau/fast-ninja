@@ -34,22 +34,22 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 #include <iostream>
+#include <ranges>
 
 VariableDependencies::VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables) {
-    for (auto& pair: variables) {
-        unresolved[pair.first] = {};
-        known_variables.insert(pair.first);
+    for (auto& name : std::views::keys(variables)) {
+        unresolved[name] = {};
+        known_variables.insert(name);
     }
 }
+
 void VariableDependencies::update(const std::string& name, const std::unordered_set<std::string>& dependencies) {
     if (dependencies.empty()) {
         resolved.insert(name);
         unresolved.erase(name);
     }
     else {
-        if (!std::all_of(dependencies.begin(), dependencies.end(), [this](const auto& name){
-                                                                       return known_variables.contains(name);
-                                                                   })) {
+        if (!std::ranges::all_of(dependencies, [this](const auto& name) { return known_variables.contains(name); })) {
             throw Exception("unknwon variable"); // TODO: include name
         }
         unresolved[name] = dependencies;
@@ -63,10 +63,8 @@ std::unordered_set<std::string> VariableDependencies::get_next() const {
 
     std::unordered_set<std::string> next;
 
-    for (auto& pair: unresolved) {
-        if (std::all_of(pair.second.begin(), pair.second.end(), [this](const std::string& dependency) {
-               return resolved.contains(dependency);
-            })) {
+    for (auto& pair : unresolved) {
+        if (std::ranges::all_of(pair.second, [this](const std::string& dependency) { return resolved.contains(dependency); })) {
             next.insert(pair.first);
         }
     }

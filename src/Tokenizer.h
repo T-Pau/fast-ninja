@@ -32,6 +32,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <FileSource.h>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -50,6 +51,7 @@ public:
 
     enum class CharacterType {
         BRACED_VARIABLE,
+        COMMENT,
         END,
         NEWLINE,
         ILLEGAL,
@@ -64,6 +66,7 @@ public:
         BEGIN_FILENAME,
         BEGIN_SCOPE,
         BUILD,
+        BUILT_FILES,
         COLON,
         DEFAULT,
         END,
@@ -82,10 +85,33 @@ public:
         WORD
     };
 
+    class Character {
+    public:
+        explicit Character(int value);
+        Character(CharacterType type, int value): type(type), value(value) {}
+
+        [[nodiscard]] char character() const {return static_cast<char>(value);}
+        [[nodiscard]] bool is_brace_close() const {return type == CharacterType::PUNCTUATION && value == '}';}
+        [[nodiscard]] bool is_brace_open() const {return type == CharacterType::PUNCTUATION && value == '{';}
+        [[nodiscard]] bool is_braced_variable() const {return type == CharacterType::SIMPLE_VARIABLE || type == CharacterType::BRACED_VARIABLE;}
+        [[nodiscard]] bool is_end() const {return type == CharacterType::END;}
+        [[nodiscard]] bool is_end_of_line() const {return type == CharacterType::NEWLINE || type == CharacterType::END;}
+        [[nodiscard]] bool is_equal() const {return type == CharacterType::PUNCTUATION && value == '=';}
+        [[nodiscard]] bool is_simple_variable() const {return type == CharacterType::SIMPLE_VARIABLE;}
+        [[nodiscard]] bool is_space() const {return type == CharacterType::SPACE;}
+        [[nodiscard]] bool is_word() const {return type == CharacterType::BRACED_VARIABLE || type == CharacterType::SIMPLE_VARIABLE || type == CharacterType::OTHER;}
+
+        bool operator==(const Character &other) const {return type == other.type && value == other.value;}
+
+        CharacterType type;
+        int value;
+    };
+
     class Token {
     public:
         explicit Token(TokenType type) : type{type} {}
-        Token(TokenType type, std::string value) : type{type}, value{std::move(value)} {}
+        Token(const Location& location, TokenType type) : location{location}, type{type} {}
+        Token(const Location& location, TokenType type, std::string value): location{location}, type{type}, value{std::move(value)} {}
 
         explicit operator bool() const {return type != TokenType::END;}
         [[nodiscard]] bool is_variable_refrence() const {return type == TokenType::VARIABLE_REFERENCE;}
@@ -94,6 +120,7 @@ public:
         [[nodiscard]] std::string type_name() const {return type_name(type);}
         [[nodiscard]] static std::string type_name(TokenType type);
 
+        Location location;
         TokenType type;
         std::string value;
     };
@@ -103,34 +130,28 @@ public:
     void skip_space();
     void skip_whitespace();
     void unget(const Token& token);
-    [[nodiscard]] int current_line_number() const {return line_number;}
     [[nodiscard]] const std::filesystem::path& file_name() const {return filename;}
 
 private:
-    static CharacterType type(int c);
-    static bool is_braced_variable(int c) {const auto ctype = type(c); return ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::BRACED_VARIABLE;}
-    static bool is_braced_variable(std::string name);
-    static bool is_simple_variable(int c) {return type(c) == CharacterType::SIMPLE_VARIABLE;}
-    static bool is_simple_variable(std::string name);
-    static bool is_word(int c) {const auto ctype = type(c); return ctype == CharacterType::BRACED_VARIABLE || ctype == CharacterType::SIMPLE_VARIABLE || ctype == CharacterType::OTHER;}
-
+    [[nodiscard]] Character next_character();
+    void unget_character(Character c);
     [[nodiscard]] Token get_next();
     [[nodiscard]] int count_space();
-    [[nodiscard]] Token tokenize_braced_variable();
-    [[nodiscard]] Token tokenize_dollar();
-    [[nodiscard]] Token tokenize_space();
-    [[nodiscard]] Token tokenize_variable(int first_character);
-    [[nodiscard]] Token tokenize_word(int first_character);
+    [[nodiscard]] Token tokenize_braced_variable(Location location);
+    [[nodiscard]] Token tokenize_dollar(Location location);
+    [[nodiscard]] Token tokenize_space(Location location);
+    [[nodiscard]] Token tokenize_variable(Location location, Character first_character);
+    [[nodiscard]] Token tokenize_word(Location location, Character first_character);
 
     static std::unordered_map<std::string, TokenType> keywords;
     static std::unordered_map<int, CharacterType> special_characters;
 
     std::filesystem::path filename;
-    std::ifstream source;
+    FileSource source;
+    std::optional<Character> ungot_character;
     std::optional<Token> ungot;
-    bool beggining_of_line = true;
+    bool begining_of_line = true;
     int indent = 0;
-    int line_number = 1;
 };
 
 #endif //TOKENIZER_H

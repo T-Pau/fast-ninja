@@ -1,6 +1,6 @@
 #ifndef WORD_H
 #define WORD_H
-#include <variant>
+
 
 /*
 Word.h --
@@ -36,10 +36,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <variant>
 #include <vector>
-#include <unordered_set>
 
+#include "FastNinjaUtil.h"
 #include "FilenameWord.h"
-#include "Filename.h"
 #include "VariableReference.h"
 
 class FilenameWord;
@@ -65,7 +64,7 @@ class Word {
         StringElement(std::string text, bool escape): text{std::move(text)}, escape{escape} {}
         StringElement() = default;
 
-        [[nodiscard]] std::string string() const;
+        [[nodiscard]] std::string string() const {return escape ? dollar_escape(text) : text;}
 
       private:
         std::string text;

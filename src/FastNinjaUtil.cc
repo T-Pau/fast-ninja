@@ -1,12 +1,9 @@
-#ifndef DEPENDENCIES_H
-#define DEPENDENCIES_H
-
 /*
-Dependencies.h --
+Util.cc -- 
 
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <assembler@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -32,30 +29,23 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
+#include "Util.h"
 
-#include "Filename.h"
-#include "FilenameList.h"
-#include "Tokenizer.h"
+std::string dollar_escape(const std::string& str) {
+    if (str.find_first_of(" $:\n") == std::string::npos) {
+        return str;
+    }
 
-class Dependencies {
-  public:
-    Dependencies(Tokenizer& tokenizer, bool force_build);
-    Dependencies(FilenameList direct): direct(std::move(direct)) {}
-    Dependencies() = default;
+    std::string escaped;
+    for (char c : str) {
+        if (c == ' ' || c == '$' || c == ':' || c == '\n') {
+            escaped += "$";
+            escaped += c;
+        }
+        else {
+            escaped += c;
+        }
+    }
+    return escaped;
 
-    void resolve(const Scope& scope);
-    void collect_output_files(std::unordered_set<std::string>& output_files) const;
-    void mark_as_build();
-    void serialize(std::ostream& stream) const;
-
-  private:
-    FilenameList direct;
-    FilenameList implicit;
-    FilenameList order;
-    FilenameList validation;
-};
-
-std::ostream& operator<<(std::ostream& stream, const Dependencies& dependencies);
-
-#endif // DEPENDENCIES_H
+}

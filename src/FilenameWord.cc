@@ -1,5 +1,5 @@
 /*
-ExplicitFilename.cc -- 
+ExplicitFilename.cc --
 
 Copyright (C) Dieter Baron
 
@@ -35,8 +35,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameVariable.h"
 
-
-FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{force_build} {
+FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build{ force_build } {
     std::string string;
 
     auto first = true;
@@ -50,6 +49,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{
         }
         else if (token.type == Tokenizer::TokenType::END_FILENAME) {
             if (braced) {
+                location.extend(token.location);
                 break;
             }
             else {
@@ -58,6 +58,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{
         }
         else if (token.type == Tokenizer::TokenType::BEGIN_FILENAME) {
             if (!braced && first) {
+                location.extend(token.location);
                 first = false;
                 braced = true;
                 continue;
@@ -74,8 +75,6 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{
             throw Exception("unterminated filename");
         }
 
-        first = false;
-
         if (token.is_variable_refrence()) {
             if (!string.empty()) {
                 elements.emplace_back(string);
@@ -91,6 +90,9 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build): force_build{
             tokenizer.unget(token);
             break;
         }
+
+        location.extend(token.location);
+        first = false;
     }
 
     if (!string.empty()) {
@@ -126,7 +128,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
 
     if (resolved && !contains_filename_variable) {
         auto name = std::string();
-        for (const auto& element: elements) {
+        for (const auto& element : elements) {
             if (std::holds_alternative<std::string>(element)) {
                 name += std::get<std::string>(element);
             }
@@ -134,7 +136,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
                 name += std::get<const Variable*>(element)->string();
             }
         }
-        filename = Filename{force_build ? Filename::Type::BUILD : Filename::Type::UNKNOWN, name};
+        filename = Filename{location, force_build ? Filename::Type::BUILD : Filename::Type::UNKNOWN, name};
         filename->resolve(context);
     }
 }

@@ -31,13 +31,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tokenizer.h"
 
-#include <algorithm>
-
 #include "Exception.h"
 
 // clang-format off
 std::unordered_map<std::string, Tokenizer::TokenType> Tokenizer::keywords = {
     {"build", TokenType::BUILD},
+    {"built-files-list", TokenType::BUILT_FILES},
     {"default", TokenType::DEFAULT},
     {"include", TokenType::INCLUDE},
     {"pool", TokenType::POOL},
@@ -50,6 +49,7 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
     {' ', CharacterType::SPACE},
     {'\t', CharacterType::ILLEGAL},
     {'\n', CharacterType::NEWLINE},
+    {'#', CharacterType::COMMENT},
     {'$', CharacterType::PUNCTUATION},
     {'-', CharacterType::SIMPLE_VARIABLE},
     {'.', CharacterType::BRACED_VARIABLE},
@@ -63,10 +63,7 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
 };
 // clang-format on
 
-Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{ filename } {
-    if (source.fail()) {
-        throw Exception("can't open '%s'", filename.c_str());
-    }
+Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{Symbol( filename) } {
 }
 
 std::string Tokenizer::Token::string() const {
@@ -97,6 +94,9 @@ std::string Tokenizer::Token::type_name(TokenType type) {
 
         case TokenType::BUILD:
             return "build";
+
+        case TokenType::BUILT_FILES:
+            return "built_files";
 
         case TokenType::COLON:
             return ":";
@@ -182,100 +182,119 @@ Tokenizer::Token Tokenizer::get_next() {
         return token;
     }
 
-    if (beggining_of_line) {
-        line_number += 1;
-    }
-
     while (true) {
-        if (beggining_of_line) {
-            beggining_of_line = false;
+        auto location = source.location();
+
+        if (begining_of_line) {
+            begining_of_line = false;
             auto new_indent = count_space();
             // TODO: doesn't return space token for indent, is that okay?
             if (new_indent != indent) {
                 const auto type = new_indent > indent ? TokenType::BEGIN_SCOPE : TokenType::END_SCOPE;
                 indent = new_indent;
-                return Token{ type };
+                source.expand_location(location);
+                return Token{location, type};
             }
         }
 
-        switch (auto c = source.get()) {
-            case '#':
-                while ((c = source.get()) != '\n' && c != EOF) {
+        auto c = next_character();
+        switch (c.type) {
+            case CharacterType::COMMENT:
+                while (!(c = next_character()).is_end_of_line()) {
                 }
-                if (c != EOF) {
-                    source.unget();
+                if (c.is_end()) {
+                    location = source.location();
+                    return Token{location, TokenType::END};
+                }
+                else {
+                    unget_character(c);
                     continue;
                 }
-                // fallthrough
 
-            case EOF:
-                return Token{ TokenType::END };
+            case CharacterType::PUNCTUATION:
+                switch (c.value) {
+                    case ':': {
+                        begining_of_line = false;
+                        auto c2 = next_character();
+                        if (c2.is_equal()) {
+                            source.expand_location(location);
+                            return Token{location, TokenType::ASSIGN_LIST};
+                        }
+                        else {
+                            unget_character(c2);
+                            return Token{location, TokenType::COLON};
+                        }
+                    }
 
-            case '\t':
-                throw Exception{ "tabs are not allowed, use spaces" };
+                    case '=':
+                        begining_of_line = false;
+                        return Token{location, TokenType::ASSIGN};
 
-            case '\n':
-                if (beggining_of_line) {
+                    case '|': {
+                        begining_of_line = false;
+                        auto c2 = next_character();
+                        switch (c2.value) {
+                            case '@':
+                                source.expand_location(location);
+                                return Token{location, TokenType::VALIDATION_DEPENDENCY};
+
+                            case '|':
+                                source.expand_location(location);
+                                return Token{location, TokenType::ORDER_DEPENDENCY};
+
+                            default:
+                                unget_character(c2);
+                                return Token{location, TokenType::IMPLICIT_DEPENDENCY};
+                        }
+                    }
+
+                    case '{':
+                    case '}': {
+                        begining_of_line = false;
+                        auto c2 = next_character();
+                        if (c2 == c) {
+                            source.expand_location(location);
+                            return Token{location, c.is_brace_open() ? TokenType::BEGIN_FILENAME : TokenType::END_FILENAME};
+                        }
+                        else {
+                            unget_character(c2);
+                            return tokenize_word(location, c);
+                        }
+                    }
+
+                    case '$':
+                        begining_of_line = false;
+                        return tokenize_dollar(location);
+
+                    default:
+                        return tokenize_word(location, c);
+                }
+
+            case CharacterType::END:
+                return Token{location, TokenType::END};
+
+            case CharacterType::ILLEGAL:
+                throw Exception{"tabs are not allowed, use spaces"};
+
+            case CharacterType::NEWLINE:
+                if (begining_of_line) {
                     if (indent > 0) {
                         indent = 0;
                         source.unget();
-                        return Token{ TokenType::END_SCOPE };
+                        return Token{location, TokenType::END_SCOPE};
                     }
                     break;
                 }
-                beggining_of_line = true;
-                return Token{ TokenType::NEWLINE };
+                begining_of_line = true;
+                return Token{location, TokenType::NEWLINE};
 
-            case ' ':
-                return tokenize_space();
+            case CharacterType::SPACE:
+                return tokenize_space(location);
 
-            case ':':
-                beggining_of_line = false;
-                switch (source.get()) {
-                    case '=':
-                        return Token{ TokenType::ASSIGN_LIST };
-
-                    default:
-                        source.unget();
-                        return Token{ TokenType::COLON };
-                }
-
-            case '=':
-                beggining_of_line = false;
-                return Token{ TokenType::ASSIGN };
-
-            case '|':
-                beggining_of_line = false;
-                switch (source.get()) {
-                    case '@':
-                        return Token{ TokenType::VALIDATION_DEPENDENCY };
-
-                    case '|':
-                        return Token{ TokenType::ORDER_DEPENDENCY };
-
-                    default:
-                        source.unget();
-                        return Token{ TokenType::IMPLICIT_DEPENDENCY };
-                }
-
-            case '{':
-            case '}':
-                beggining_of_line = false;
-                if (source.get() == c) {
-                    return Token{ c == '{' ? TokenType::BEGIN_FILENAME : TokenType::END_FILENAME };
-                }
-                else {
-                    source.unget();
-                    return tokenize_word(c);
-                }
-
-            case '$':
-                beggining_of_line = false;
-                return tokenize_dollar();
 
             default:
-                beggining_of_line = false;
-                return tokenize_word(c);
+                begining_of_line = false;
+                return tokenize_word(location, c);
         }
     }
 }
@@ -307,125 +326,150 @@ void Tokenizer::unget(const Token& token) {
     ungot = token;
 }
 
-Tokenizer::CharacterType Tokenizer::type(int c) {
-    const auto it = special_characters.find(c);
-    if (it != special_characters.end()) {
-        return it->second;
-    }
-    else if ((c >= 'a') && (c <= 'z') || (c >= 'A') && (c <= 'Z') || (c >= '0' && c <= '9')) {
-        return CharacterType::SIMPLE_VARIABLE;
-    }
-    else {
-        return CharacterType::OTHER;
-    }
-}
 
-bool Tokenizer::is_braced_variable(std::string name) {
-    return std::all_of(name.begin(), name.end(), [](char c) { return is_braced_variable(c); });
-}
-
-bool Tokenizer::is_simple_variable(std::string name) {
-    return std::all_of(name.begin(), name.end(), [](char c) { return is_simple_variable(c); });
-}
-
-Tokenizer::Token Tokenizer::tokenize_braced_variable() {
+Tokenizer::Token Tokenizer::tokenize_braced_variable(Location location) {
     std::string name;
 
     while (true) {
-        auto c = source.get();
+        auto c = next_character();
 
-        if (c == EOF || c == '\n') {
-            source.unget();
+        if (c.is_end_of_line()) {
+            unget_character(c);
             throw Exception("unclosed '${'");
         }
-        if (is_braced_variable(c)) {
-            name += static_cast<char>(c);
+        if (c.is_braced_variable()) {
+            name += c.character();
         }
-        else if (c == '}') {
-            return Token{ TokenType::VARIABLE_REFERENCE, name };
+        else if (c.is_brace_close()) {
+            source.expand_location(location);
+            return Token{location, TokenType::VARIABLE_REFERENCE, name};
         }
         else {
-            while ((c = source.get()) != EOF && c != '}' && c != '\n') {
+            auto c2 = next_character();
+            while (!c2.is_end_of_line() && !c2.is_brace_close()) {
+                c2 = next_character();
             }
-            if (c != '}') {
-                source.unget();
+            if (!c2.is_brace_close()) {
+                unget_character(c2);
             }
-            throw Exception("invalid character in variable name");
+            throw Exception("invalid character '%c' in variable name", c.value);
         }
     }
 }
 
-Tokenizer::Token Tokenizer::tokenize_dollar() {
-    switch (const int c = source.get()) {
-        case '\n': {
-            while (source.get() == ' ') {
-            }
-            source.unget();
-            return tokenize_word('\n');
-        }
-
-        case '$':
-        case ' ':
-            return tokenize_word(c);
-
-        case '{':
-            return tokenize_braced_variable();
-
-        default:
-            return tokenize_variable(c);
+Tokenizer::Token Tokenizer::tokenize_dollar(Location location) {
+    auto c = next_character();
+    if (c.is_brace_open()) {
+        return tokenize_braced_variable(location);
+    }
+    else {
+        return tokenize_variable(location, c);
     }
 }
 
 int Tokenizer::count_space() {
     auto length = 0;
 
-    while (source.get() == ' ') {
+    auto c = next_character();
+    while (c.is_space()) {
         length += 1;
+        c = next_character();
     }
-    source.unget();
+    unget_character(c);
 
     return length;
 }
 
-Tokenizer::Token Tokenizer::tokenize_space() {
-    return Token{ TokenType::SPACE, std::string(count_space() + 1, ' ') };
+Tokenizer::Token Tokenizer::tokenize_space(Location location) {
+    auto spaces = std::string(count_space() + 1, ' ');
+    source.expand_location(location);
+    return Token{location, TokenType::SPACE, spaces};
 }
 
 
-Tokenizer::Token Tokenizer::tokenize_word(int first_character) {
-    std::string value{ static_cast<char>(first_character) };
+Tokenizer::Token Tokenizer::tokenize_word(Location location, Character first_character) {
+    std::string value{first_character.character()};
 
     while (true) {
-        const int c = source.get();
+        auto c = next_character();
 
-        if (is_word(c)) {
-            value += static_cast<char>(c);
+        if (c.is_word()) {
+            value += c.character();
         }
         else {
-            source.unget();
+            unget_character(c);
             break;
         }
     }
+    source.expand_location(location);
 
     const auto it = keywords.find(value);
     if (it != keywords.end()) {
-        return Token{ it->second };
+        return Token{location, it->second};
     }
     else {
-        return Token{ TokenType::WORD, value };
+        return Token{location, TokenType::WORD, value};
     }
 }
 
-Tokenizer::Token Tokenizer::tokenize_variable(int c) {
+
+Tokenizer::Token Tokenizer::tokenize_variable(Location location, Character c) {
     std::string name;
 
-    while (is_simple_variable(c)) {
-        name += static_cast<char>(c);
-        c = source.get();
+    while (c.is_simple_variable()) {
+        name += c.character();
+        c = next_character();
     }
-    source.unget();
+    unget_character(c);
     if (name.empty()) {
         throw Exception("empty variable name");
     }
-    return Token{ TokenType::VARIABLE_REFERENCE, name };
+    source.expand_location(location);
+    return Token{location, TokenType::VARIABLE_REFERENCE, name};
+}
+
+
+Tokenizer::Character Tokenizer::next_character() {
+    if (ungot_character) {
+        auto c = *ungot_character;
+        ungot_character.reset();
+        return c;
+    }
+
+    auto c = source.get();
+    if (c == '$') {
+        auto c2 = source.get();
+        if (c2 == ' ' || c2 == '$' || c2 == '\n' || c2 == ':') {
+            return {CharacterType::SIMPLE_VARIABLE, c2};
+        }
+        else {
+            source.unget();
+            return Character{c};
+        }
+    }
+    else {
+        return Character{c};
+    }
+}
+
+
+void Tokenizer::unget_character(Character c) {
+    if (ungot_character) {
+        throw Exception("double unget");
+    }
+    ungot_character = c;
+}
+
+
+ Tokenizer::Character::Character(int value): value(value) {
+    auto it = special_characters.find(value);
+    if (it != special_characters.end()) {
+        type = it->second;
+    }
+    else if ((value >= 'a') && (value <= 'z') || (value >= 'A') && (value <= 'Z') || (value >= '0' && value <= '9')) {
+        type = CharacterType::SIMPLE_VARIABLE;
+    }
+    else {
+        type = CharacterType::OTHER;
+    }
 }

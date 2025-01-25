@@ -1,8 +1,8 @@
-#ifndef DEPENDENCIES_H
-#define DEPENDENCIES_H
+#ifndef FAST_NINJA_UTIL_H
+#define FAST_NINJA_UTIL_H
 
 /*
-Dependencies.h --
+FastNinjaUtil.h --
 
 Copyright (C) Dieter Baron
 
@@ -32,30 +32,8 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
+#include <string>
 
-#include "Filename.h"
-#include "FilenameList.h"
-#include "Tokenizer.h"
+std::string dollar_escape(const std::string& str);
 
-class Dependencies {
-  public:
-    Dependencies(Tokenizer& tokenizer, bool force_build);
-    Dependencies(FilenameList direct): direct(std::move(direct)) {}
-    Dependencies() = default;
-
-    void resolve(const Scope& scope);
-    void collect_output_files(std::unordered_set<std::string>& output_files) const;
-    void mark_as_build();
-    void serialize(std::ostream& stream) const;
-
-  private:
-    FilenameList direct;
-    FilenameList implicit;
-    FilenameList order;
-    FilenameList validation;
-};
-
-std::ostream& operator<<(std::ostream& stream, const Dependencies& dependencies);
-
-#endif // DEPENDENCIES_H
+#endif // FAST_NINJA_UTIL_H

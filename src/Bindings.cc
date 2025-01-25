@@ -37,6 +37,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FilenameVariable.h"
 #include "TextVariable.h"
 #include "VariableDependencies.h"
+#include <DiagnosticOutput.h>
 
 Bindings::Bindings(Tokenizer& tokenizer) {
     auto token = tokenizer.next(Tokenizer::Skip::WHITESPACE);
@@ -47,7 +48,8 @@ Bindings::Bindings(Tokenizer& tokenizer) {
 
     while (((token = tokenizer.next(Tokenizer::Skip::SPACE))) && token.type != Tokenizer::TokenType::END_SCOPE) {
         if (token.type != Tokenizer::TokenType::WORD) {
-            throw Exception("invalid variable name");
+            DiagnosticOutput::global.error({}, token.location, "invalid variable name");
+            throw Exception();
         }
         auto name = token.string();
         token = tokenizer.next(Tokenizer::Skip::SPACE);
@@ -58,7 +60,8 @@ Bindings::Bindings(Tokenizer& tokenizer) {
             variables[name] = std::unique_ptr<Variable>(new FilenameVariable{name, tokenizer});
         }
         else {
-            throw Exception("assignment expected");
+            DiagnosticOutput::global.error({}, token.location, "assignment expected");
+            throw Exception();
         }
     }
 }

@@ -53,6 +53,8 @@ class FilenameWord {
 
     void collect_filenames(std::vector<Filename>& filenames) const;
 
+    Location location;
+
 private:
     std::vector<std::variant<std::string, VariableReference, const Variable*>> elements;
     std::optional<Filename> filename;

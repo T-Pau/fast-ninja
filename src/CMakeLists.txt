@@ -5,6 +5,7 @@ ADD_EXECUTABLE(fast-ninja
         Bindings.cc
         Build.cc
         Dependencies.cc
+        FastNinjaUtil.cc
         File.cc
         Filename.cc
         FilenameList.cc

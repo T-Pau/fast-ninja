@@ -69,11 +69,13 @@ class File: public Scope {
     void parse(const std::filesystem::path& filename);
     void parse_assignment(Tokenizer& tokenizer, const std::string& variable_name);
     void parse_build(Tokenizer& tokenizer);
+    void parse_built_files_list(Tokenizer& tokenizer);
     void parse_default(Tokenizer& tokenizer);
     void parse_pool(Tokenizer& tokenizer);
     void parse_rule(Tokenizer& tokenizer);
     void parse_subninja(Tokenizer& tokenizer);
 
+    void process_bindings();
     void process_output();
     void process_rest();
 
@@ -87,6 +89,7 @@ class File: public Scope {
     std::map<std::string, Rule> rules;
     std::map<std::string, Pool> pools;
     std::vector<Build> builds;
+    std::optional<Filename> built_files_list;
     FilenameList defaults{true};
     std::vector<std::filesystem::path> subninjas;
     std::vector<std::unique_ptr<File>> subfiles;

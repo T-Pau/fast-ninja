@@ -1,0 +1,30 @@
+arguments ..
+file input empty
+file build.fninja <>
+rule a
+    command = {{input}} $in $out
+    flags = --verbose
+
+build {{output file}}: a input
+end-of-inline-data
+file build/build.ninja {} <>
+# This file is automatically created by fast-ninja from ../build.fninja
+# Do not edit.
+
+build_directory = .
+source_directory = ..
+top_build_directory = .
+top_source_directory = ..
+
+rule a
+    command = ../input $in $out
+    flags = --verbose
+
+rule fast-ninja
+    command = fast-ninja ..
+    generator = 1
+
+build output$ file : a ../input
+
+build build.ninja : fast-ninja ../build.fninja
+end-of-inline-data

@@ -33,7 +33,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "Exception.h"
+#include "FastNinjaUtil.h"
 #include "File.h"
+#include <DiagnosticOutput.h>
 
 void Filename::resolve(const ResolveContext& context) {
     if (!context.classify_filenames) {
@@ -66,12 +68,17 @@ void Filename::resolve(const ResolveContext& context) {
                 prefix = file->source_directory;
             }
             if (!std::filesystem::exists(full_name())) {
-                throw Exception("source file '" + full_name().string() + "' does not exist");
+                DiagnosticOutput::global.error({}, location) << "source file '" << full_name().string() << "' does not exist";
+                throw Exception();
             }
             break;
 
         case Type::UNKNOWN:
-            throw Exception("unknown file '" + name + "'"); // TODO: include sub-directory
+            if (prefix.empty()) {
+                prefix = file->source_directory;
+            }
+            DiagnosticOutput::global.error({}, location) << "unknown file '" << full_name().string() << "'"; // TODO: include sub-directory
+            throw Exception();
     }
 }
 
@@ -92,6 +99,6 @@ bool Filename::operator<(const Filename& other) const {
 }
 
 std::ostream& operator<<(std::ostream& stream, const Filename& file_name) {
-    stream << file_name.full_name().generic_string();
+    stream << dollar_escape(file_name.full_name().generic_string());
     return stream;
 }
