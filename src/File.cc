@@ -31,6 +31,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
+#include <algorithm>
 #include <iostream>
 #include <ranges>
 
