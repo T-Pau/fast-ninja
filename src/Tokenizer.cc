@@ -63,7 +63,7 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
 };
 // clang-format on
 
-Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{Symbol( filename) } {
+Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{Symbol( filename.string()) } {
 }
 
 std::string Tokenizer::Token::string() const {
