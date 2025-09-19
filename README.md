@@ -1,11 +1,43 @@
+## What Is fast-ninja?
+
+The [Ninja Build System](https://ninja-build.org) is not designed to be used directly. fast-ninja is a light-weight preprocessor that adds the missing features and conveniences to make it usable almost directly.
+
+## Why Use fast-ninja?
+
+Most other build systems that can use Ninja are centered around building executables for modern computers on many platforms and add a lot of weight to accomplish that. They are therefore a bad fit for projects that don't need any of that, like cross-building programs for retro computers.
+
+fast-ninja is designed for projects that don't use a modern compiler toolchain but use tools that already work across multiple platforms.
+
+## Getting Started
+
+First, [build and install](https://github.com/T-Pau/fast-ninja/blob/main/INSTALL.md) fast-ninja.
+
+Then, set up the build directory:
+
+```sh
+mkdir build
+cd build
+fast-ninja ..
+```
+
+Lastly, build your project:
+
+```sh
+ninja
+```
+
+## Staying in Touch
+
+If you found a problem, please [create an issue on GitHub](https://github.com/T-Pau/fast-ninja/issues/new/choose) or let us know at [fast-ninja@tpau.group](mailto:fast-ninja@tpau.group).
+
+Also let us know if the documentation is incomplete, inaccurate, or hard to understand.
+
 # Fast Ninja
 
 Fast Ninja is a minimalist frontend for the [Ninja](https://ninja-build.org) build system to allow it to be used directly.
 
 ## Building Fast Ninja
 
-Fast Ninja is written in C++20 and should run on any modern platform. It will also come with an extensive test suite.
-
-To build it, you need a C++20 compiler and [cmake](https://cmake.org). To run the tests, you need [Python](https://www.python.org) and [nihtest](https://github.com/nih-at/nihtest).
+## Build Status
 
 [![CMake on multiple platforms](https://github.com/T-Pau/fast-ninja/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/T-Pau/fast-ninja/actions/workflows/cmake-multi-platform.yml)
