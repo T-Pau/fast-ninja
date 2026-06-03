@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="100%" height="100%" viewBox="0 0 167 165" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
     <g id="_-Rounded-Rectangle-" serif:id="(Rounded Rectangle)" transform="matrix(-0.253823,0.000135706,-0.000224252,-0.419437,182.373,239.909)">
-        <path d="M718,376.5C718,268.601 573.242,181 394.94,181L387.06,181C208.758,181 64,268.601 64,376.5C64,484.399 208.758,572 387.06,572L394.94,572C573.242,572 718,484.399 718,376.5Z"/>
+        <path d="M718,376.5C718,268.601 573.242,181 394.94,181L387.06,181C208.758,181 64,268.601 64,376.5C64,484.399 208.758,572 387.06,572L394.94,572C573.242,572 718,484.399 718,376.5Z" style="fill:#000;"/>
     </g>
     <g id="Vector-Stripes" serif:id="Vector Stripes">
         <clipPath id="_clip1">

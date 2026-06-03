@@ -7,7 +7,7 @@ The [Ninja Build System](https://ninja-build.org) is not designed to be used dir
 
 ## Why Use fast-ninja?
 
-Most other build systems that can use Ninja are centered around building executables for modern computers on many platforms and add a lot of weight to accomplish that. They are therefore a bad fit for projects that don't need any of that, like cross-building programs for retro computers.
+Most other build systems that can use Ninja are centered around providing a portable environment for building executables for modern computers on many platforms and add a lot of weight to accomplish that. They are therefore a bad fit for projects that don't need any of that, like cross-building programs for retro computers.
 
 fast-ninja is designed for projects that don't use a modern compiler toolchain but use tools that already work across multiple platforms.
 

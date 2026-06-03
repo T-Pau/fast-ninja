@@ -1,4 +1,4 @@
-Copyright (C) 2023 Dieter Baron
+Copyright (C) 2023-2026 Dieter Baron
 
 The authors can be contacted at <fast-ninja@tpau.group>
 
