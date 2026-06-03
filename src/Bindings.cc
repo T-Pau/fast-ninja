@@ -1,9 +1,7 @@
 /*
-Bindings.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -33,11 +31,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 
-#include "Exception.h"
+#include <tpau-cpp-kernal/DiagnosticOutput.h>
+#include <tpau-cpp-kernal/Exception.h>
+
 #include "FilenameVariable.h"
 #include "TextVariable.h"
 #include "VariableDependencies.h"
-#include <DiagnosticOutput.h>
 
 Bindings::Bindings(Tokenizer& tokenizer) {
     auto token = tokenizer.next(Tokenizer::Skip::WHITESPACE);
@@ -48,20 +47,20 @@ Bindings::Bindings(Tokenizer& tokenizer) {
 
     while (((token = tokenizer.next(Tokenizer::Skip::SPACE))) && token.type != Tokenizer::TokenType::END_SCOPE) {
         if (token.type != Tokenizer::TokenType::WORD) {
-            DiagnosticOutput::global.error({}, token.location, "invalid variable name");
-            throw Exception();
+            tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "invalid variable name");
+            throw tpau::cpp_kernal::Exception();
         }
         auto name = token.string();
         token = tokenizer.next(Tokenizer::Skip::SPACE);
         if (token.type == Tokenizer::TokenType::ASSIGN) {
-            variables[name] = std::unique_ptr<Variable>(new TextVariable{name, tokenizer});
+            variables[name] = std::unique_ptr<Variable>(new TextVariable{ name, tokenizer });
         }
         else if (token.type == Tokenizer::TokenType::ASSIGN_LIST) {
-            variables[name] = std::unique_ptr<Variable>(new FilenameVariable{name, tokenizer});
+            variables[name] = std::unique_ptr<Variable>(new FilenameVariable{ name, tokenizer });
         }
         else {
-            DiagnosticOutput::global.error({}, token.location, "assignment expected");
-            throw Exception();
+            tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "assignment expected");
+            throw tpau::cpp_kernal::Exception();
         }
     }
 }
@@ -75,7 +74,7 @@ void Bindings::print(std::ostream& stream, const std::string& indent) const {
 
     std::sort(variable_names.begin(), variable_names.end());
 
-    for (const auto& variable: variable_names) {
+    for (const auto& variable : variable_names) {
         stream << indent;
         variables.find(variable)->second->print_definition(stream);
     }
@@ -84,10 +83,10 @@ void Bindings::print(std::ostream& stream, const std::string& indent) const {
 void Bindings::resolve(const Scope& scope, bool expand_variables, bool classify_filenames) {
     auto dependencies = VariableDependencies(variables);
     ResolveResult result;
-    auto context = ResolveContext{scope, result, expand_variables, classify_filenames};
+    auto context = ResolveContext{ scope, result, expand_variables, classify_filenames };
 
     while (!dependencies.finished()) {
-        for (auto& name: dependencies.get_next()) {
+        for (auto& name : dependencies.get_next()) {
             result.unresolved_used_variables.clear();
             variables[name]->resolve(context);
             dependencies.update(name, result.unresolved_used_variables);

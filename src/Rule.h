@@ -1,9 +1,7 @@
 /*
-Rule.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -39,7 +37,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class File;
 
-class Rule: public ScopedDirective {
+class Rule : public ScopedDirective {
   public:
     Rule() = default;
     Rule(const File* file, std::string name, Tokenizer& tokenizer);

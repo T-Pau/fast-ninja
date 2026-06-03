@@ -1,9 +1,7 @@
 /*
-mask.cc -- main file
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <mask@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -33,10 +31,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include "Command.h"
+#include <tpau-cpp-kernal/Command.h>
+
 #include "File.h"
 
-class fast_ninja : public Command {
+class fast_ninja : public tpau::cpp_kernal::Command {
   public:
     fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
 
@@ -51,12 +50,12 @@ class fast_ninja : public Command {
     size_t minimum_arguments() override { return 1; }
 
   private:
-    static std::vector<Commandline::Option> options;
+    static std::vector<tpau::cpp_kernal::Commandline::Option> options;
 
     std::unique_ptr<File> file;
 };
 
-std::vector<Commandline::Option> fast_ninja::options = {};
+std::vector<tpau::cpp_kernal::Commandline::Option> fast_ninja::options = {};
 
 int main(int argc, char* argv[]) {
     auto command = fast_ninja();
@@ -71,6 +70,4 @@ void fast_ninja::process() {
     file->process();
 }
 
-void fast_ninja::create_output() {
-    file->create_output();
-}
+void fast_ninja::create_output() { file->create_output(); }

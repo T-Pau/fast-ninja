@@ -1,9 +1,7 @@
 /*
-Pool.cc -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -35,7 +33,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Pool::Pool(std::string name, Tokenizer& tokenizer) : name{ std::move(name) } {
     tokenizer.expect(Tokenizer::TokenType::NEWLINE, Tokenizer::Skip::SPACE);
-    bindings = Bindings{tokenizer};
+    bindings = Bindings{ tokenizer };
 }
 
 void Pool::process(const File& file) { bindings.resolve(file); }

@@ -1,9 +1,7 @@
 /*
-Build.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,19 +29,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Build.h"
 
+#include <tpau-cpp-kernal/Exception.h>
 
 #include "File.h"
-#include <Exception.h>
 
-Build::Build(const File* file, Tokenizer& tokenizer): ScopedDirective(file) {
-    outputs = Dependencies{tokenizer, true};
+Build::Build(const File* file, Tokenizer& tokenizer) : ScopedDirective(file) {
+    outputs = Dependencies{ tokenizer, true };
     tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
     rule_name = tokenizer.expect(Tokenizer::TokenType::WORD, Tokenizer::Skip::SPACE).string();
-    inputs = Dependencies{tokenizer, false};
-    bindings = Bindings{tokenizer};
+    inputs = Dependencies{ tokenizer, false };
+    bindings = Bindings{ tokenizer };
 }
 
-Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings): ScopedDirective{file, std::move(bindings)}, rule_name{std::move(rule_name)}, outputs{std::move(outputs)}, inputs{std::move(inputs)} {}
+Build::Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings) : ScopedDirective{ file, std::move(bindings) }, rule_name{ std::move(rule_name) }, outputs{ std::move(outputs) }, inputs{ std::move(inputs) } {}
 
 void Build::collect_output_files(std::unordered_set<std::string>& output_files) const {
     if (!is_phony()) {
@@ -51,21 +49,18 @@ void Build::collect_output_files(std::unordered_set<std::string>& output_files) 
     }
 }
 
-
 void Build::process(const File& file) {
     if (!is_phony()) {
         rule = file.find_rule(rule_name);
         if (!rule) {
-            throw Exception("unknown rule %s", rule_name.c_str());
+            throw tpau::cpp_kernal::Exception("unknown rule %s", rule_name.c_str());
         }
     }
     inputs.resolve(file);
     bindings.resolve(file);
 }
 
-void Build::process_outputs(const File& file) {
-    outputs.resolve(file);
-}
+void Build::process_outputs(const File& file) { outputs.resolve(file); }
 
 void Build::print(std::ostream& stream) const {
     stream << std::endl << "build " << outputs << " : " << rule_name << " " << inputs << std::endl;

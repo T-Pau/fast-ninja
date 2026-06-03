@@ -1,9 +1,7 @@
 /*
-File.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -35,22 +33,23 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <ranges>
 
-#include "../foundation/lib/Util.h"
-#include "Exception.h"
+#include <tpau-cpp-kernal/DiagnosticOutput.h>
+#include <tpau-cpp-kernal/Exception.h>
+#include <tpau-cpp-kernal/Util.h>
+
 #include "FilenameVariable.h"
 #include "TextVariable.h"
 #include "Tokenizer.h"
-#include <DiagnosticOutput.h>
 
 File::File(const std::filesystem::path& filename, const std::filesystem::path& build_directory, const File* next) : Scope(next), source_filename{ filename }, build_directory{ build_directory.lexically_normal() } {
     source_directory = filename.parent_path();
-    build_filename = replace_extension(build_directory / source_filename.filename(), "ninja");
+    build_filename = tpau::cpp_kernal::replace_extension(build_directory / source_filename.filename(), "ninja");
 
-    bindings.add(std::make_shared<FilenameVariable>("build_directory", FilenameList{ Filename{{}, Filename::Type::COMPLETE, build_directory.string()}}));
-    bindings.add(std::make_shared<FilenameVariable>("source_directory", FilenameList{ Filename{{}, Filename::Type::COMPLETE, source_directory.string()}}));
+    bindings.add(std::make_shared<FilenameVariable>("build_directory", FilenameList{ Filename{ {}, Filename::Type::COMPLETE, build_directory.string() } }));
+    bindings.add(std::make_shared<FilenameVariable>("source_directory", FilenameList{ Filename{ {}, Filename::Type::COMPLETE, source_directory.string() } }));
     if (is_top()) {
-        bindings.add(std::make_shared<FilenameVariable>("top_build_directory", FilenameList{Filename{{}, Filename::Type::COMPLETE, top_file()->build_directory.string()}}));
-        bindings.add(std::make_shared<FilenameVariable>("top_source_directory", FilenameList{Filename{{}, Filename::Type::COMPLETE, top_file()->source_directory.string()}}));
+        bindings.add(std::make_shared<FilenameVariable>("top_build_directory", FilenameList{ Filename{ {}, Filename::Type::COMPLETE, top_file()->build_directory.string() } }));
+        bindings.add(std::make_shared<FilenameVariable>("top_source_directory", FilenameList{ Filename{ {}, Filename::Type::COMPLETE, top_file()->source_directory.string() } }));
     }
 
     parse(filename);
@@ -80,7 +79,6 @@ void File::process() {
     process_rest();
 }
 
-
 void File::process_bindings() { // NOLINT(misc-no-recursion)
     bindings.resolve(*this, true, false);
 
@@ -89,11 +87,10 @@ void File::process_bindings() { // NOLINT(misc-no-recursion)
     }
 }
 
-
 void File::process_output() { // NOLINT(misc-no-recursion)
     auto top_file = const_cast<File*>(top()->as_file());
     if (!top_file) {
-        throw Exception("internal error: top scope is not a file");
+        throw tpau::cpp_kernal::Exception("internal error: top scope is not a file");
     }
 
     for (auto& build : builds) {
@@ -160,7 +157,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
         auto stream = std::ofstream(build_filename);
 
         if (stream.fail()) {
-            throw Exception("can't create output '%s'", build_filename.c_str());
+            throw tpau::cpp_kernal::Exception("can't create output '%s'", build_filename.c_str());
         }
 
         stream << "# This file is automatically created by fast-ninja from " << source_filename.generic_string() << std::endl;
@@ -186,7 +183,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
         if (!subninjas.empty()) {
             stream << std::endl;
             for (auto& subninja : subninjas) {
-                stream << "subninja " << (build_directory / replace_extension(subninja, "ninja")).lexically_normal().string() << std::endl;
+                stream << "subninja " << (build_directory / tpau::cpp_kernal::replace_extension(subninja, "ninja")).lexically_normal().string() << std::endl;
             }
         }
     }
@@ -273,8 +270,8 @@ void File::parse(const std::filesystem::path& filename) {
             case Tokenizer::TokenType::ORDER_DEPENDENCY:
             case Tokenizer::TokenType::VALIDATION_DEPENDENCY:
             case Tokenizer::TokenType::VARIABLE_REFERENCE:
-                DiagnosticOutput::global.error({}, token.location) << "unexpected " << token.type_name();
-                throw Exception();
+                tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location) << "unexpected " << token.type_name();
+                throw tpau::cpp_kernal::Exception();
         }
     }
 }
@@ -289,43 +286,37 @@ void File::parse_assignment(Tokenizer& tokenizer, const std::string& variable_na
         bindings.add(std::shared_ptr<Variable>(new FilenameVariable(variable_name, tokenizer)));
     }
     else {
-        DiagnosticOutput::global.error({}, token.location, "invalid assignment");
-        throw Exception();
+        tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "invalid assignment");
+        throw tpau::cpp_kernal::Exception();
     }
 }
 
-
-void File::parse_build(Tokenizer& tokenizer) {
-    builds.emplace_back(this, tokenizer);
-}
-
+void File::parse_build(Tokenizer& tokenizer) { builds.emplace_back(this, tokenizer); }
 
 void File::parse_built_files_list(Tokenizer& tokenizer) {
     if (!is_top()) {
         // TODO: include location
-        DiagnosticOutput::global.error({}, {}, "built_files_list only allowed in top ninja file");
+        tpau::cpp_kernal::DiagnosticOutput::global.error({}, {}, "built_files_list only allowed in top ninja file");
     }
     if (built_files_list) {
         // TODO: include location
-        DiagnosticOutput::global.error({}, {}, "built_files_list already specified");
+        tpau::cpp_kernal::DiagnosticOutput::global.error({}, {}, "built_files_list already specified");
     }
-    auto text = Text{tokenizer};
-    built_files_list = Filename{text.location(), Filename::Type::BUILD, text.string()};
+    auto text = Text{ tokenizer };
+    built_files_list = Filename{ text.location(), Filename::Type::BUILD, text.string() };
 }
-
 
 void File::parse_default(Tokenizer& tokenizer) {
     // TODO: append in case of multiple defaults statements
     defaults = FilenameList{ tokenizer, FilenameList::BUILD };
 }
 
-
 void File::parse_pool(Tokenizer& tokenizer) {
     tokenizer.skip_space();
     const auto token = tokenizer.next();
     if (token.type != Tokenizer::TokenType::WORD) {
-        DiagnosticOutput::global.error({}, token.location, "name expected");
-        throw Exception();
+        tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "name expected");
+        throw tpau::cpp_kernal::Exception();
     }
     pools[token.string()] = Pool(token.string(), tokenizer);
 }
@@ -334,8 +325,8 @@ void File::parse_rule(Tokenizer& tokenizer) {
     tokenizer.skip_space();
     const auto token = tokenizer.next();
     if (token.type != Tokenizer::TokenType::WORD) {
-        DiagnosticOutput::global.error({}, token.location, "name expected");
-        throw Exception();
+        tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "name expected");
+        throw tpau::cpp_kernal::Exception();
     }
     rules[token.string()] = Rule(this, token.string(), tokenizer);
 }
@@ -347,9 +338,9 @@ void File::parse_subninja(Tokenizer& tokenizer) {
 }
 
 void File::add_generator_build(std::vector<Filename>& ninja_outputs, std::vector<Filename>& ninja_inputs) const { // NOLINT(misc-no-recursion)
-    ninja_outputs.emplace_back(Location{}, Filename::Type::BUILD, build_filename.string());
+    ninja_outputs.emplace_back(tpau::cpp_kernal::Location{}, Filename::Type::BUILD, build_filename.string());
     ninja_inputs.insert(ninja_inputs.end(), includes.begin(), includes.end());
-    ninja_inputs.emplace_back(Location{}, Filename::Type::COMPLETE, source_filename.string());
+    ninja_inputs.emplace_back(tpau::cpp_kernal::Location{}, Filename::Type::COMPLETE, source_filename.string());
     for (const auto& file : subfiles) {
         file->add_generator_build(ninja_outputs, ninja_inputs);
     }
@@ -363,5 +354,5 @@ const File* File::next_file() const {
     if (auto file = dynamic_cast<const File*>(next)) {
         return file;
     }
-    throw Exception("internal error: file contained in non-file scope");
+    throw tpau::cpp_kernal::Exception("internal error: file contained in non-file scope");
 }

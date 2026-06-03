@@ -2,11 +2,9 @@
 #define FILENAME_H
 
 /*
-Filename.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -39,16 +37,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class Scope;
 
 class Filename {
-public:
-    enum class Type {
-        BUILD,
-        COMPLETE,
-        SOURCE,
-        UNKNOWN
-    };
+  public:
+    enum class Type { BUILD, COMPLETE, SOURCE, UNKNOWN };
 
-    explicit Filename(Location location, std::string name): location{std::move(location)}, name{std::move(name)} {}
-    Filename(Location location, Type type, std::string name): location{std::move(location)}, type{type}, name{std::move(name)} {}
+    explicit Filename(tpau::cpp_kernal::Location location, std::string name) : location{ std::move(location) }, name{ std::move(name) } {}
+
+    Filename(tpau::cpp_kernal::Location location, Type type, std::string name) : location{ std::move(location) }, type{ type }, name{ std::move(name) } {}
+
     Filename() = default;
 
     void resolve(const ResolveContext& context);
@@ -57,14 +52,15 @@ public:
 
     // TODO: consider prefix?
     bool operator<(const Filename& other) const;
-    bool operator==(const Filename& other) const {return type == other.type && name == other.name;}
 
-    Type type{Type::UNKNOWN};
+    bool operator==(const Filename& other) const { return type == other.type && name == other.name; }
+
+    Type type{ Type::UNKNOWN };
     std::string name;
     std::filesystem::path prefix;
-    Location location;
+    tpau::cpp_kernal::Location location;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Filename& file_name);
 
-#endif //FILENAME_H
+#endif // FILENAME_H

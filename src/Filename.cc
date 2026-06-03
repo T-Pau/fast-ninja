@@ -1,9 +1,7 @@
 /*
-FileName.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,11 +29,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Filename.h"
 
+#include <tpau-cpp-kernal/DiagnosticOutput.h>
+#include <tpau-cpp-kernal/Exception.h>
 
-#include "Exception.h"
 #include "FastNinjaUtil.h"
 #include "File.h"
-#include <DiagnosticOutput.h>
 
 void Filename::resolve(const ResolveContext& context) {
     if (!context.classify_filenames) {
@@ -68,8 +66,8 @@ void Filename::resolve(const ResolveContext& context) {
                 prefix = file->source_directory;
             }
             if (!std::filesystem::exists(full_name())) {
-                DiagnosticOutput::global.error({}, location) << "source file '" << full_name().string() << "' does not exist";
-                throw Exception();
+                tpau::cpp_kernal::DiagnosticOutput::global.error({}, location) << "source file '" << full_name().string() << "' does not exist";
+                throw tpau::cpp_kernal::Exception();
             }
             break;
 
@@ -77,8 +75,8 @@ void Filename::resolve(const ResolveContext& context) {
             if (prefix.empty()) {
                 prefix = file->source_directory;
             }
-            DiagnosticOutput::global.error({}, location) << "unknown file '" << full_name().string() << "'"; // TODO: include sub-directory
-            throw Exception();
+            tpau::cpp_kernal::DiagnosticOutput::global.error({}, location) << "unknown file '" << full_name().string() << "'"; // TODO: include sub-directory
+            throw tpau::cpp_kernal::Exception();
     }
 }
 

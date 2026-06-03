@@ -1,9 +1,7 @@
 /*
-Word.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -33,8 +31,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sstream>
 
+#include <tpau-cpp-kernal/Exception.h>
+
 #include "FilenameVariable.h"
-#include "Exception.h"
 
 Word::Word(Tokenizer& tokenizer) {
     std::string string;
@@ -45,9 +44,9 @@ Word::Word(Tokenizer& tokenizer) {
             break;
         }
 
-        if (token.is_variable_refrence()) {
+        if (token.is_variable_reference()) {
             if (!string.empty()) {
-                elements.emplace_back(StringElement{string, true});
+                elements.emplace_back(StringElement{ string, true });
                 string = "";
             }
             elements.emplace_back(VariableReference(token.value));
@@ -63,7 +62,7 @@ Word::Word(Tokenizer& tokenizer) {
     }
 
     if (!string.empty()) {
-        elements.emplace_back(StringElement{string, true});
+        elements.emplace_back(StringElement{ string, true });
     }
 }
 
@@ -82,7 +81,7 @@ void Word::print(std::ostream& stream) const {
     const FilenameVariable* filename_variable{};
     const FilenameWord* filename_word{};
 
-    for (auto& element: elements) {
+    for (auto& element : elements) {
         if (std::holds_alternative<StringElement>(element)) {
             *current_string += std::get<StringElement>(element).string();
         }
@@ -93,11 +92,11 @@ void Word::print(std::ostream& stream) const {
         else if (std::holds_alternative<const Variable*>(element)) {
             auto& variable = std::get<const Variable*>(element);
             if (variable->is_text()) {
-                    *current_string += variable->string();
+                *current_string += variable->string();
             }
             else {
                 if (filename_variable || filename_word) {
-                    throw Exception("multiple file names in word not allowed");
+                    throw tpau::cpp_kernal::Exception("multiple file names in word not allowed");
                 }
                 filename_variable = variable->as_filename();
                 current_string = &postfix;
@@ -105,7 +104,7 @@ void Word::print(std::ostream& stream) const {
         }
         else if (std::holds_alternative<FilenameWord>(element)) {
             if (filename_variable || filename_word) {
-                throw Exception("multiple file names in word not allowed");
+                throw tpau::cpp_kernal::Exception("multiple file names in word not allowed");
             }
             filename_word = &std::get<FilenameWord>(element);
             current_string = &postfix;
@@ -121,7 +120,7 @@ void Word::print(std::ostream& stream) const {
             filename_word->collect_filenames(filenames);
         }
         auto first = true;
-        for (const auto& filename: filenames) {
+        for (const auto& filename : filenames) {
             if (first) {
                 first = false;
             }
@@ -151,7 +150,7 @@ void Word::resolve(const ResolveContext& context) {
                     element = variable;
                 }
                 else {
-                    throw Exception("unknown variable %s", variable_reference.name.c_str());
+                    throw tpau::cpp_kernal::Exception("unknown variable %s", variable_reference.name.c_str());
                 }
             }
         }
@@ -161,7 +160,6 @@ void Word::resolve(const ResolveContext& context) {
         }
     }
 }
-
 
 std::ostream& operator<<(std::ostream& stream, const Word& word) {
     word.print(stream);

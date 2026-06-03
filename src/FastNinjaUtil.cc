@@ -1,9 +1,7 @@
 /*
-Util.cc -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,7 +27,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Util.h"
+#include <string>
 
 std::string dollar_escape(const std::string& str) {
     if (str.find_first_of(" $:\n") == std::string::npos) {
@@ -47,5 +45,4 @@ std::string dollar_escape(const std::string& str) {
         }
     }
     return escaped;
-
 }

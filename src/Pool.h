@@ -1,9 +1,7 @@
 /*
-Pool.h -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -40,16 +38,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class File;
 
 class Pool {
-public:
+  public:
     Pool() = default;
     Pool(std::string name, Tokenizer& tokenizer);
 
     void process(const File& file);
     void print(std::ostream& stream) const;
 
-private:
+  private:
     std::string name;
     Bindings bindings;
 };
 
-#endif //POOL_H
+#endif // POOL_H

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -11,6 +11,8 @@ set(PACKAGE_AUTHOR "T'Pau")
 SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
+
+FIND_PACKAGE(tpau-cpp-kernal REQUIRED)
 
 option(RUN_REGRESS "Run regression tests" ON)
 
@@ -71,7 +73,6 @@ endif()
 enable_testing()
 
 # Targets
-add_subdirectory(foundation/lib)
 add_subdirectory(src)
 #add_subdirectory(share)
 add_subdirectory(tests)

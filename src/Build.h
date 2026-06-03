@@ -1,9 +1,7 @@
 /*
-Build.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -39,12 +37,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Rule.h"
 #include "ScopedDirective.h"
 
-class Build: public ScopedDirective {
+class Build : public ScopedDirective {
   public:
     explicit Build(const File* file, Tokenizer& tokenizer);
     Build(const File* file, std::string rule_name, Dependencies outputs, Dependencies inputs, Bindings bindings);
 
-    [[nodiscard]] bool is_phony() const {return rule_name == "phony";}
+    [[nodiscard]] bool is_phony() const { return rule_name == "phony"; }
+
     void process(const File& file);
     void process_outputs(const File& file);
     void print(std::ostream& stream) const;

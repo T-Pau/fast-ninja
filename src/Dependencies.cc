@@ -1,9 +1,7 @@
 /*
-Dependencies.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,15 +29,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Dependencies.h"
 
-
-#include <DiagnosticOutput.h>
-#include <Exception.h>
 #include <sstream>
+
+#include <tpau-cpp-kernal/DiagnosticOutput.h>
+#include <tpau-cpp-kernal/Exception.h>
 
 Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
     auto type = is_build ? FilenameList::BUILD : FilenameList::INLINE;
 
-    direct = FilenameList{tokenizer, type};
+    direct = FilenameList{ tokenizer, type };
 
     while (true) {
         tokenizer.skip_space();
@@ -64,16 +62,15 @@ Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
                 break;
 
             default:
-                DiagnosticOutput::global.error({}, token.location) << "internal error: " << token.type_name() << " not included in filename";
-                throw Exception();
+                tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location) << "internal error: " << token.type_name() << " not included in filename";
+                throw tpau::cpp_kernal::Exception();
         }
     }
 }
 
-
 void Dependencies::resolve(const Scope& scope) {
     ResolveResult result;
-    auto context = ResolveContext{scope, result};
+    auto context = ResolveContext{ scope, result };
     direct.resolve(context);
     implicit.resolve(context);
     order.resolve(context);
@@ -90,7 +87,7 @@ void Dependencies::resolve(const Scope& scope) {
             }
             str << variable;
         }
-        throw Exception("unresolved variables: %s", str.str().c_str());
+        throw tpau::cpp_kernal::Exception("unresolved variables: %s", str.str().c_str());
     }
 }
 

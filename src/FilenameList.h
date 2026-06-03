@@ -2,11 +2,9 @@
 #define FILENAMELIST_H
 
 /*
-FilenameList.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -39,31 +37,36 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class FilenameList {
   public:
-    enum Type {
-        BUILD,
-        INLINE,
-        SCOPED
-    };
+    enum Type { BUILD, INLINE, SCOPED };
+
     explicit FilenameList(Tokenizer& tokenizer, Type type);
-    explicit FilenameList(Filename filename): filenames({std::move(filename)}) {}
-    explicit FilenameList(bool force_build = false): force_build{force_build} {}
-    explicit FilenameList(std::vector<Filename> filenames): filenames(std::move(filenames)) {}
+
+    explicit FilenameList(Filename filename) : filenames({ std::move(filename) }) {}
+
+    explicit FilenameList(bool force_build = false) : force_build{ force_build } {}
+
+    explicit FilenameList(std::vector<Filename> filenames) : filenames(std::move(filenames)) {}
 
     void resolve(const ResolveContext& context);
-    [[nodiscard]] bool empty() const {return words.empty() && filenames.empty();}
-    [[nodiscard]] bool is_resolved() const {return resolved;}
+
+    [[nodiscard]] bool empty() const { return words.empty() && filenames.empty(); }
+
+    [[nodiscard]] bool is_resolved() const { return resolved; }
+
     void serialize(std::ostream& stream) const;
     [[nodiscard]] std::string string() const;
-    [[nodiscard]] bool contains_unknown_file() const {return false;} // TODO
+
+    [[nodiscard]] bool contains_unknown_file() const { return false; } // TODO
+
     void collect_output_files(std::unordered_set<std::string>& output_files) const;
 
-    void collect_filenames(std::vector<Filename>& collector) const {collector.insert(collector.end(), filenames.begin(), filenames.end());}
+    void collect_filenames(std::vector<Filename>& collector) const { collector.insert(collector.end(), filenames.begin(), filenames.end()); }
 
   private:
     std::vector<FilenameWord> words;
     std::vector<Filename> filenames;
-    bool force_build{false};
-    bool resolved{false};
+    bool force_build{ false };
+    bool resolved{ false };
 };
 
 std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list);

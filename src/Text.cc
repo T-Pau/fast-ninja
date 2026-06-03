@@ -1,9 +1,7 @@
 /*
-Text.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,7 +29,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Text.h"
 
-#include "Exception.h"
+#include <tpau-cpp-kernal/Exception.h>
+
 #include "File.h"
 
 Text::Text(Tokenizer& tokenizer) {
@@ -55,7 +54,7 @@ std::ostream& operator<<(std::ostream& stream, const Text& text) {
 }
 
 void Text::print(std::ostream& stream) const {
-    for (auto& word: words) {
+    for (auto& word : words) {
         stream << word;
     }
 }

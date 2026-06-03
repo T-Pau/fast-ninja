@@ -2,11 +2,9 @@
 #define VARIABLE_REFERENCE_H
 
 /*
-VariableReference.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -39,9 +37,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class VariableReference {
   public:
-    explicit VariableReference(std::string name) : name{std::move(name)} {}
+    explicit VariableReference(std::string name) : name{ std::move(name) } {}
 
-    [[nodiscard]] const Variable* resolve(const ResolveContext& context) const {return context.get_variable(name);}
+    [[nodiscard]] const Variable* resolve(const ResolveContext& context) const { return context.get_variable(name); }
 
     std::string name;
 };

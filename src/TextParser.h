@@ -1,9 +1,7 @@
 /*
-TextParser.h -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -36,12 +34,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Tokenizer.h"
 
 class TextParser {
-public:
-    TextParser(Tokenizer& tokenizer, Tokenizer::TokenType terminator, const File& file, bool expand_variables): tokenizer{tokenizer}, file{file}, expand_variables{expand_variables}, terminator{terminator} {}
+  public:
+    TextParser(Tokenizer& tokenizer, Tokenizer::TokenType terminator, const File& file, bool expand_variables) : tokenizer{ tokenizer }, file{ file }, expand_variables{ expand_variables }, terminator{ terminator } {}
 
     Text parse();
 
-private:
+  private:
     void end_word(bool partial = false);
     void parse_tokens();
 
@@ -50,11 +48,10 @@ private:
     bool expand_variables;
     Tokenizer::TokenType terminator;
 
-    bool current_word_is_partial{false};
+    bool current_word_is_partial{ false };
     std::string current_word;
     Text text;
 };
 
 
-
-#endif //TEXTPARSER_H
+#endif // TEXTPARSER_H

@@ -3,11 +3,9 @@
 
 
 /*
-Word.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -46,12 +44,16 @@ class FilenameWord;
 class Word {
   public:
     explicit Word(Tokenizer& tokenizer);
-    explicit Word(std::string text, bool escape) {elements.emplace_back(StringElement(std::move(text), escape));};
-    explicit Word(VariableReference variable_reference) {elements.emplace_back(variable_reference);}
+
+    explicit Word(std::string text, bool escape) { elements.emplace_back(StringElement(std::move(text), escape)); };
+
+    explicit Word(VariableReference variable_reference) { elements.emplace_back(variable_reference); }
+
     Word() = default;
 
     [[nodiscard]] bool empty() const { return elements.empty(); }
-    [[nodiscard]] bool is_resolved() const {return resolved;}
+
+    [[nodiscard]] bool is_resolved() const { return resolved; }
 
     [[nodiscard]] std::string string() const;
     void print(std::ostream& stream) const;
@@ -61,18 +63,19 @@ class Word {
   private:
     class StringElement {
       public:
-        StringElement(std::string text, bool escape): text{std::move(text)}, escape{escape} {}
+        StringElement(std::string text, bool escape) : text{ std::move(text) }, escape{ escape } {}
+
         StringElement() = default;
 
-        [[nodiscard]] std::string string() const {return escape ? dollar_escape(text) : text;}
+        [[nodiscard]] std::string string() const { return escape ? dollar_escape(text) : text; }
 
       private:
         std::string text;
-        bool escape{false};
+        bool escape{ false };
     };
 
     std::vector<std::variant<StringElement, VariableReference, const Variable*, FilenameWord>> elements;
-    bool resolved{true};
+    bool resolved{ true };
 };
 
 std::ostream& operator<<(std::ostream& stream, const Word& word);

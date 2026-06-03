@@ -1,9 +1,7 @@
 /*
-File.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -33,9 +31,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FILE_H
 
 #include <filesystem>
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 #include <unordered_set>
 
 #include "Build.h"
@@ -47,20 +45,23 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Tokenizer;
 
-class File: public Scope {
+class File : public Scope {
   public:
     File() = default;
     explicit File(const std::filesystem::path& filename, const std::filesystem::path& build_directory = ".", const File* next = {});
 
     void process();
-    [[nodiscard]] bool is_output(const std::filesystem::path& file) const {return outputs.contains(file.lexically_normal().string());}
+
+    [[nodiscard]] bool is_output(const std::filesystem::path& file) const { return outputs.contains(file.lexically_normal().string()); }
+
     [[nodiscard]] const Rule* find_rule(const std::string& name) const;
     [[nodiscard]] const Variable* find_variable(const std::string& name) const;
 
     void create_output() const;
 
     [[nodiscard]] const File* next_file() const;
-    [[nodiscard]] const File* top_file() const {return top()->as_file();}
+
+    [[nodiscard]] const File* top_file() const { return top()->as_file(); }
 
     std::filesystem::path source_directory;
     std::filesystem::path build_directory;
@@ -90,7 +91,7 @@ class File: public Scope {
     std::map<std::string, Pool> pools;
     std::vector<Build> builds;
     std::optional<Filename> built_files_list;
-    FilenameList defaults{true};
+    FilenameList defaults{ true };
     std::vector<std::filesystem::path> subninjas;
     std::vector<std::unique_ptr<File>> subfiles;
 };

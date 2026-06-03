@@ -1,9 +1,7 @@
 /*
-FilenameVariable.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -32,25 +30,31 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FILENAMEVARIABLE_H
 #define FILENAMEVARIABLE_H
 
+#include <utility>
+
 #include "FilenameList.h"
 #include "ResolveContext.h"
 #include "Variable.h"
 
-#include <utility>
-
 class FilenameVariable : public Variable {
   public:
     FilenameVariable(std::string name, Tokenizer& tokenizer);
-    FilenameVariable(std::string name, FilenameList value): Variable(std::move(name)), value{std::move(value)} {}
 
-    void resolve(const ResolveContext& context) override {value.resolve(context);}
+    FilenameVariable(std::string name, FilenameList value) : Variable(std::move(name)), value{ std::move(value) } {}
+
+    void resolve(const ResolveContext& context) override { value.resolve(context); }
+
     void print_definition(std::ostream& stream) const override;
-    [[nodiscard]] std::string string() const override {return value.string();}
-    [[nodiscard]] bool contains_unknown_file() const override {return value.contains_unknown_file();}
-    void collect_filenames(std::vector<Filename>& collector) const {return value.collect_filenames(collector);}
-    bool is_resolved() const override {return value.is_resolved();}
 
-private:
+    [[nodiscard]] std::string string() const override { return value.string(); }
+
+    [[nodiscard]] bool contains_unknown_file() const override { return value.contains_unknown_file(); }
+
+    void collect_filenames(std::vector<Filename>& collector) const { return value.collect_filenames(collector); }
+
+    bool is_resolved() const override { return value.is_resolved(); }
+
+  private:
     FilenameList value;
 };
 

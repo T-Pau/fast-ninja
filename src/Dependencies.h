@@ -2,11 +2,9 @@
 #define DEPENDENCIES_H
 
 /*
-Dependencies.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -41,7 +39,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class Dependencies {
   public:
     Dependencies(Tokenizer& tokenizer, bool force_build);
-    Dependencies(FilenameList direct): direct(std::move(direct)) {}
+
+    Dependencies(FilenameList direct) : direct(std::move(direct)) {}
+
     Dependencies() = default;
 
     void resolve(const Scope& scope);

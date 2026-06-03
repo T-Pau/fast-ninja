@@ -2,11 +2,9 @@
 #define SCOPE_H
 
 /*
-Scope.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -37,16 +35,21 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class File;
 
 class Scope {
-public:
+  public:
     Scope() = default;
-    explicit Scope(const Scope* next): next{next} {}
-    Scope(const Scope* next, Bindings bindings): next{next}, bindings{std::move(bindings)} {}
+
+    explicit Scope(const Scope* next) : next{ next } {}
+
+    Scope(const Scope* next, Bindings bindings) : next{ next }, bindings{ std::move(bindings) } {}
+
     virtual ~Scope() = default;
 
-    [[nodiscard]] bool is_top() const {return !next;}
+    [[nodiscard]] bool is_top() const { return !next; }
+
     [[nodiscard]] const Scope* top() const;
     [[nodiscard]] const File* as_file() const;
-    [[nodiscard]] bool is_file() const {return as_file();}
+
+    [[nodiscard]] bool is_file() const { return as_file(); }
 
     [[nodiscard]] Variable* get_variable(const std::string& name) const;
     [[nodiscard]] const File* get_file() const;
@@ -54,9 +57,9 @@ public:
 
     virtual void polymorphic() const {}
 
-protected:
+  protected:
     const Scope* next{};
     Bindings bindings{};
 };
 
-#endif //SCOPE_H
+#endif // SCOPE_H

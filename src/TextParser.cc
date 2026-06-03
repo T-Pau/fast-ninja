@@ -1,9 +1,7 @@
 /*
-TextParser.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,9 +29,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TextParser.h"
 
+#include <tpau-cpp-kernal/Exception.h>
 
 #include "File.h"
-#include <Exception.h>
 
 Text TextParser::parse() {
     tokenizer.skip_space();

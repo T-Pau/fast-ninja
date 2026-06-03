@@ -1,6 +1,4 @@
 /*
-Tokenizer.cc --
-
 Copyright (C) Dieter Baron
 
 The authors can be contacted at <fast-ninja@tpau.group>
@@ -31,7 +29,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tokenizer.h"
 
-#include "Exception.h"
+#include <tpau-cpp-kernal/Exception.h>
 
 // clang-format off
 std::unordered_map<std::string, Tokenizer::TokenType> Tokenizer::keywords = {
@@ -63,8 +61,7 @@ std::unordered_map<int, Tokenizer::CharacterType> Tokenizer::special_characters 
 };
 // clang-format on
 
-Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{Symbol( filename.string()) } {
-}
+Tokenizer::Tokenizer(const std::filesystem::path& filename) : filename{ filename }, source{ tpau::cpp_kernal::Symbol(filename.string()) } {}
 
 std::string Tokenizer::Token::string() const {
     if (type == TokenType::VARIABLE_REFERENCE) {
@@ -147,13 +144,13 @@ std::string Tokenizer::Token::type_name(TokenType type) {
             return "word";
     }
 
-    throw Exception("invalid token type");
+    throw tpau::cpp_kernal::Exception("invalid token type");
 }
 
 Tokenizer::Token Tokenizer::expect(TokenType type, Skip skip) {
     const auto token = next(skip);
     if (token.type != type) {
-        throw Exception("expected %s", Token::type_name(type).c_str());
+        throw tpau::cpp_kernal::Exception("expected %s", Token::type_name(type).c_str());
     }
     return token;
 }
@@ -193,7 +190,7 @@ Tokenizer::Token Tokenizer::get_next() {
                 const auto type = new_indent > indent ? TokenType::BEGIN_SCOPE : TokenType::END_SCOPE;
                 indent = new_indent;
                 source.expand_location(location);
-                return Token{location, type};
+                return Token{ location, type };
             }
         }
 
@@ -204,7 +201,7 @@ Tokenizer::Token Tokenizer::get_next() {
                 }
                 if (c.is_end()) {
                     location = source.location();
-                    return Token{location, TokenType::END};
+                    return Token{ location, TokenType::END };
                 }
                 else {
                     unget_character(c);
@@ -218,17 +215,17 @@ Tokenizer::Token Tokenizer::get_next() {
                         auto c2 = next_character();
                         if (c2.is_equal()) {
                             source.expand_location(location);
-                            return Token{location, TokenType::ASSIGN_LIST};
+                            return Token{ location, TokenType::ASSIGN_LIST };
                         }
                         else {
                             unget_character(c2);
-                            return Token{location, TokenType::COLON};
+                            return Token{ location, TokenType::COLON };
                         }
                     }
 
                     case '=':
                         begining_of_line = false;
-                        return Token{location, TokenType::ASSIGN};
+                        return Token{ location, TokenType::ASSIGN };
 
                     case '|': {
                         begining_of_line = false;
@@ -236,15 +233,15 @@ Tokenizer::Token Tokenizer::get_next() {
                         switch (c2.value) {
                             case '@':
                                 source.expand_location(location);
-                                return Token{location, TokenType::VALIDATION_DEPENDENCY};
+                                return Token{ location, TokenType::VALIDATION_DEPENDENCY };
 
                             case '|':
                                 source.expand_location(location);
-                                return Token{location, TokenType::ORDER_DEPENDENCY};
+                                return Token{ location, TokenType::ORDER_DEPENDENCY };
 
                             default:
                                 unget_character(c2);
-                                return Token{location, TokenType::IMPLICIT_DEPENDENCY};
+                                return Token{ location, TokenType::IMPLICIT_DEPENDENCY };
                         }
                     }
 
@@ -254,7 +251,7 @@ Tokenizer::Token Tokenizer::get_next() {
                         auto c2 = next_character();
                         if (c2 == c) {
                             source.expand_location(location);
-                            return Token{location, c.is_brace_open() ? TokenType::BEGIN_FILENAME : TokenType::END_FILENAME};
+                            return Token{ location, c.is_brace_open() ? TokenType::BEGIN_FILENAME : TokenType::END_FILENAME };
                         }
                         else {
                             unget_character(c2);
@@ -271,22 +268,22 @@ Tokenizer::Token Tokenizer::get_next() {
                 }
 
             case CharacterType::END:
-                return Token{location, TokenType::END};
+                return Token{ location, TokenType::END };
 
             case CharacterType::ILLEGAL:
-                throw Exception{"tabs are not allowed, use spaces"};
+                throw tpau::cpp_kernal::Exception("tabs are not allowed, use spaces");
 
             case CharacterType::NEWLINE:
                 if (begining_of_line) {
                     if (indent > 0) {
                         indent = 0;
                         source.unget();
-                        return Token{location, TokenType::END_SCOPE};
+                        return Token{ location, TokenType::END_SCOPE };
                     }
                     break;
                 }
                 begining_of_line = true;
-                return Token{location, TokenType::NEWLINE};
+                return Token{ location, TokenType::NEWLINE };
 
             case CharacterType::SPACE:
                 return tokenize_space(location);
@@ -321,13 +318,12 @@ void Tokenizer::skip_whitespace() {
 
 void Tokenizer::unget(const Token& token) {
     if (ungot) {
-        throw Exception("double unget");
+        throw tpau::cpp_kernal::Exception("double unget");
     }
     ungot = token;
 }
 
-
-Tokenizer::Token Tokenizer::tokenize_braced_variable(Location location) {
+Tokenizer::Token Tokenizer::tokenize_braced_variable(tpau::cpp_kernal::Location location) {
     std::string name;
 
     while (true) {
@@ -335,14 +331,14 @@ Tokenizer::Token Tokenizer::tokenize_braced_variable(Location location) {
 
         if (c.is_end_of_line()) {
             unget_character(c);
-            throw Exception("unclosed '${'");
+            throw tpau::cpp_kernal::Exception("unclosed '${'");
         }
         if (c.is_braced_variable()) {
             name += c.character();
         }
         else if (c.is_brace_close()) {
             source.expand_location(location);
-            return Token{location, TokenType::VARIABLE_REFERENCE, name};
+            return Token{ location, TokenType::VARIABLE_REFERENCE, name };
         }
         else {
             auto c2 = next_character();
@@ -352,12 +348,12 @@ Tokenizer::Token Tokenizer::tokenize_braced_variable(Location location) {
             if (!c2.is_brace_close()) {
                 unget_character(c2);
             }
-            throw Exception("invalid character '%c' in variable name", c.value);
+            throw tpau::cpp_kernal::Exception("invalid character '%c' in variable name", c.value);
         }
     }
 }
 
-Tokenizer::Token Tokenizer::tokenize_dollar(Location location) {
+Tokenizer::Token Tokenizer::tokenize_dollar(tpau::cpp_kernal::Location location) {
     auto c = next_character();
     if (c.is_brace_open()) {
         return tokenize_braced_variable(location);
@@ -380,15 +376,14 @@ int Tokenizer::count_space() {
     return length;
 }
 
-Tokenizer::Token Tokenizer::tokenize_space(Location location) {
+Tokenizer::Token Tokenizer::tokenize_space(tpau::cpp_kernal::Location location) {
     auto spaces = std::string(count_space() + 1, ' ');
     source.expand_location(location);
-    return Token{location, TokenType::SPACE, spaces};
+    return Token{ location, TokenType::SPACE, spaces };
 }
 
-
-Tokenizer::Token Tokenizer::tokenize_word(Location location, Character first_character) {
-    std::string value{first_character.character()};
+Tokenizer::Token Tokenizer::tokenize_word(tpau::cpp_kernal::Location location, Character first_character) {
+    std::string value{ first_character.character() };
 
     while (true) {
         auto c = next_character();
@@ -405,15 +400,14 @@ Tokenizer::Token Tokenizer::tokenize_word(Location location, Character first_cha
 
     const auto it = keywords.find(value);
     if (it != keywords.end()) {
-        return Token{location, it->second};
+        return Token{ location, it->second };
     }
     else {
-        return Token{location, TokenType::WORD, value};
+        return Token{ location, TokenType::WORD, value };
     }
 }
 
-
-Tokenizer::Token Tokenizer::tokenize_variable(Location location, Character c) {
+Tokenizer::Token Tokenizer::tokenize_variable(tpau::cpp_kernal::Location location, Character c) {
     std::string name;
 
     while (c.is_simple_variable()) {
@@ -422,12 +416,11 @@ Tokenizer::Token Tokenizer::tokenize_variable(Location location, Character c) {
     }
     unget_character(c);
     if (name.empty()) {
-        throw Exception("empty variable name");
+        throw tpau::cpp_kernal::Exception("empty variable name");
     }
     source.expand_location(location);
-    return Token{location, TokenType::VARIABLE_REFERENCE, name};
+    return Token{ location, TokenType::VARIABLE_REFERENCE, name };
 }
-
 
 Tokenizer::Character Tokenizer::next_character() {
     if (ungot_character) {
@@ -440,28 +433,26 @@ Tokenizer::Character Tokenizer::next_character() {
     if (c == '$') {
         auto c2 = source.get();
         if (c2 == ' ' || c2 == '$' || c2 == '\n' || c2 == ':') {
-            return {CharacterType::SIMPLE_VARIABLE, c2};
+            return { CharacterType::SIMPLE_VARIABLE, c2 };
         }
         else {
             source.unget();
-            return Character{c};
+            return Character{ c };
         }
     }
     else {
-        return Character{c};
+        return Character{ c };
     }
 }
 
-
 void Tokenizer::unget_character(Character c) {
     if (ungot_character) {
-        throw Exception("double unget");
+        throw tpau::cpp_kernal::Exception("double unget");
     }
     ungot_character = c;
 }
 
-
- Tokenizer::Character::Character(int value): value(value) {
+Tokenizer::Character::Character(int value) : value(value) {
     auto it = special_characters.find(value);
     if (it != special_characters.end()) {
         type = it->second;

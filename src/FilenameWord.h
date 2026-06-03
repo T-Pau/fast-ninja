@@ -1,12 +1,10 @@
-#ifndef EXPLICITFILENAME_H
-#define EXPLICITFILENAME_H
+#ifndef FILENAME_WORD_H
+#define FILENAME_WORD_H
 
 /*
-FilenameWord.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -45,21 +43,25 @@ class FilenameList;
 class FilenameWord {
   public:
     explicit FilenameWord(Tokenizer& tokenizer, bool force_build = false);
-    explicit FilenameWord(std::string word): elements{std::move(word)} {}
 
-    [[nodiscard]] bool empty() const {return elements.empty();}
-    [[nodiscard]] bool is_resolved() const {return resolved;}
+    explicit FilenameWord(std::string word) : elements{ std::move(word) } {}
+
+    [[nodiscard]] bool empty() const { return elements.empty(); }
+
+    [[nodiscard]] bool is_resolved() const { return resolved; }
+
     void resolve(const ResolveContext& context);
 
     void collect_filenames(std::vector<Filename>& filenames) const;
 
-    Location location;
+    tpau::cpp_kernal::Location location;
 
-private:
+  private:
     std::vector<std::variant<std::string, VariableReference, const Variable*>> elements;
     std::optional<Filename> filename;
-    bool force_build{false};
-    bool resolved{true};
+    bool force_build{ false };
+    bool resolved{ true };
 };
 
-#endif // EXPLICITFILENAME_H
+
+#endif // FILENAME_WORD_H

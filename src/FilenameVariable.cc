@@ -1,9 +1,7 @@
 /*
-FilenameVariable.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,7 +29,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameVariable.h"
 
-
 #include "File.h"
 
 FilenameVariable::FilenameVariable(std::string name, Tokenizer& tokenizer) : Variable(std::move(name)) {
@@ -52,6 +49,4 @@ FilenameVariable::FilenameVariable(std::string name, Tokenizer& tokenizer) : Var
     }
 }
 
-void FilenameVariable::print_definition(std::ostream& stream) const {
-    stream << name << " = " << value << std::endl;
-}
+void FilenameVariable::print_definition(std::ostream& stream) const { stream << name << " = " << value << std::endl; }

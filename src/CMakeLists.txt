@@ -25,6 +25,6 @@ ADD_EXECUTABLE(fast-ninja
         VariableReference.cc
         Word.cc
 )
-target_include_directories(fast-ninja PRIVATE ${CMAKE_SOURCE_DIR}/foundation/lib ${PROJECT_BINARY_DIR})
-target_link_libraries(fast-ninja foundation)
+target_include_directories(fast-ninja PRIVATE ${PROJECT_BINARY_DIR})
+target_link_libraries(fast-ninja tpau-cpp-kernal::tpau-cpp-kernal)
 INSTALL(TARGETS fast-ninja RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

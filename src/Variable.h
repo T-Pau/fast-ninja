@@ -1,9 +1,7 @@
 /*
-Variable.h -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -41,15 +39,19 @@ class FilenameVariable;
 class TextVariable;
 
 class Variable {
-public:
-    explicit Variable(std::string name): name{std::move(name)} {}
+  public:
+    explicit Variable(std::string name) : name{ std::move(name) } {}
+
     Variable() = default;
     virtual ~Variable() = default;
 
     [[nodiscard]] const FilenameVariable* as_filename() const;
     [[nodiscard]] const TextVariable* as_text() const;
-    [[nodiscard]] bool is_filename() const {return as_filename();}
-    [[nodiscard]] bool is_text() const {return as_text();}
+
+    [[nodiscard]] bool is_filename() const { return as_filename(); }
+
+    [[nodiscard]] bool is_text() const { return as_text(); }
+
     [[nodiscard]] virtual bool is_resolved() const = 0;
 
     virtual void resolve(const ResolveContext& context) = 0;
@@ -59,9 +61,8 @@ public:
 
     std::string name;
 
-private:
+  private:
 };
 
 
-
-#endif //VARIABLE_H
+#endif // VARIABLE_H

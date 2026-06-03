@@ -1,9 +1,7 @@
 /*
-Scope.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -68,9 +66,7 @@ const Scope* Scope::top() const {
     return scope;
 }
 
-const File* Scope::as_file() const {
-    return dynamic_cast<const File*>(this);
-}
+const File* Scope::as_file() const { return dynamic_cast<const File*>(this); }
 
 bool Scope::is_output_file(const std::filesystem::path& file) const {
     if (auto top_file = top()->as_file()) {

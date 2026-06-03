@@ -1,9 +1,7 @@
 /*
-ExplicitFilename.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,7 +29,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameWord.h"
 
-#include <Exception.h>
+#include <tpau-cpp-kernal/Exception.h>
 
 #include "FilenameVariable.h"
 
@@ -53,7 +51,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 break;
             }
             else {
-                throw Exception("unmatched }}");
+                throw tpau::cpp_kernal::Exception("unmatched }}");
             }
         }
         else if (token.type == Tokenizer::TokenType::BEGIN_FILENAME) {
@@ -64,7 +62,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 continue;
             }
             else {
-                throw Exception("cannot nest filenames");
+                throw tpau::cpp_kernal::Exception("cannot nest filenames");
             }
         }
         else if (token.type == Tokenizer::TokenType::NEWLINE) {
@@ -72,10 +70,10 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 tokenizer.unget(token);
                 break;
             }
-            throw Exception("unterminated filename");
+            throw tpau::cpp_kernal::Exception("unterminated filename");
         }
 
-        if (token.is_variable_refrence()) {
+        if (token.is_variable_reference()) {
             if (!string.empty()) {
                 elements.emplace_back(string);
                 string = "";
@@ -111,7 +109,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
                 element = variable;
             }
             else {
-                throw Exception("unknown variable %s", variable_reference.name.c_str());
+                throw tpau::cpp_kernal::Exception("unknown variable %s", variable_reference.name.c_str());
             }
         }
         if (std::holds_alternative<const Variable*>(element)) {
@@ -136,7 +134,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
                 name += std::get<const Variable*>(element)->string();
             }
         }
-        filename = Filename{location, force_build ? Filename::Type::BUILD : Filename::Type::UNKNOWN, name};
+        filename = Filename{ location, force_build ? Filename::Type::BUILD : Filename::Type::UNKNOWN, name };
         filename->resolve(context);
     }
 }
@@ -157,13 +155,13 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
             else if (std::holds_alternative<VariableReference>(element)) {
                 auto variable_reference = std::get<VariableReference>(element);
-                throw Exception("unresolved variable %s", variable_reference.name.c_str());
+                throw tpau::cpp_kernal::Exception("unresolved variable %s", variable_reference.name.c_str());
             }
             else {
                 auto variable = std::get<const Variable*>(element);
                 if (variable->is_filename()) {
                     if (filename_variable) {
-                        throw Exception("multiple filename variables in filename not allowed");
+                        throw tpau::cpp_kernal::Exception("multiple filename variables in filename not allowed");
                     }
                     else {
                         filename_variable = variable->as_filename();
@@ -190,7 +188,7 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
         }
         else {
-            throw Exception("internal error: file name never resolved");
+            throw tpau::cpp_kernal::Exception("internal error: file name never resolved");
         }
     }
 }

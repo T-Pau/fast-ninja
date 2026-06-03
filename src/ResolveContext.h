@@ -1,9 +1,7 @@
 /*
-ResolveContext.h -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -38,9 +36,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scope.h"
 
 class ResolveContext {
-public:
-  // TODO: expand_variables should default to true
-    ResolveContext(const Scope& scope, ResolveResult& result, bool expand_variables = false, bool classify_filenames = true): scope{scope}, result{result}, expand_variables{expand_variables}, classify_filenames{classify_filenames} {}
+  public:
+    // TODO: expand_variables should default to true
+    ResolveContext(const Scope& scope, ResolveResult& result, bool expand_variables = false, bool classify_filenames = true) : scope{ scope }, result{ result }, expand_variables{ expand_variables }, classify_filenames{ classify_filenames } {}
 
     [[nodiscard]] const Variable* get_variable(const std::string& name) const;
 
@@ -51,5 +49,4 @@ public:
 };
 
 
-
-#endif //RESOLVE_CONTEXT_H
+#endif // RESOLVE_CONTEXT_H

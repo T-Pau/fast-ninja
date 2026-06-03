@@ -1,9 +1,7 @@
 /*
-VariableDependencies.cc --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -30,11 +28,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "VariableDependencies.h"
-#include "Exception.h"
 
 #include <algorithm>
 #include <iostream>
 #include <ranges>
+
+#include <tpau-cpp-kernal/Exception.h>
 
 VariableDependencies::VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables) {
     for (auto& name : std::views::keys(variables)) {
@@ -50,7 +49,7 @@ void VariableDependencies::update(const std::string& name, const std::unordered_
     }
     else {
         if (!std::ranges::all_of(dependencies, [this](const auto& name) { return known_variables.contains(name); })) {
-            throw Exception("unknwon variable"); // TODO: include name
+            throw tpau::cpp_kernal::Exception("unknown variable"); // TODO: include name
         }
         unresolved[name] = dependencies;
     }
@@ -70,7 +69,7 @@ std::unordered_set<std::string> VariableDependencies::get_next() const {
     }
 
     if (next.empty()) {
-        throw Exception("cycle in variable definition"); // TODO: include list of variables
+        throw tpau::cpp_kernal::Exception("cycle in variable definition"); // TODO: include list of variables
     }
 
     return next;

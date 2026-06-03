@@ -2,11 +2,9 @@
 #define VARIABLE_DEPENDENCIES_H
 
 /*
-VariableDependencies.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -44,7 +42,8 @@ class VariableDependencies {
     VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables);
     void update(const std::string& name, const std::unordered_set<std::string>& dependencies);
 
-    [[nodiscard]] bool finished() const {return unresolved.empty();}
+    [[nodiscard]] bool finished() const { return unresolved.empty(); }
+
     std::unordered_set<std::string> get_next() const;
 
   private:

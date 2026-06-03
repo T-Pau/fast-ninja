@@ -1,9 +1,7 @@
 /*
-Bindings.h --
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <assembler@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -46,15 +44,22 @@ class Bindings {
 
     void print(std::ostream& stream, const std::string& indent) const;
     void resolve(const Scope& scope, bool expand_variables = true, bool classify_variables = true);
-    void add(std::shared_ptr<Variable> variable) {variables[variable->name] = std::move(variable);}
 
-    [[nodiscard]] auto empty() const {return variables.empty();}
+    void add(std::shared_ptr<Variable> variable) { variables[variable->name] = std::move(variable); }
+
+    [[nodiscard]] auto empty() const { return variables.empty(); }
+
     auto begin() { return variables.begin(); }
+
     auto end() { return variables.end(); }
+
     [[nodiscard]] auto begin() const { return variables.begin(); }
+
     [[nodiscard]] auto end() const { return variables.end(); }
-    auto find(const std::string& name) {return variables.find(name);}
-    [[nodiscard]] auto find(const std::string& name) const {return variables.find(name);}
+
+    auto find(const std::string& name) { return variables.find(name); }
+
+    [[nodiscard]] auto find(const std::string& name) const { return variables.find(name); }
 
   private:
     std::unordered_map<std::string, std::shared_ptr<Variable>> variables;

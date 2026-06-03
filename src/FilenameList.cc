@@ -1,9 +1,7 @@
 /*
-FilenameList.cc -- 
-
 Copyright (C) Dieter Baron
 
-The authors can be contacted at <accelerate@tpau.group>
+The authors can be contacted at <fast-ninja@tpau.group>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,17 +29,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameList.h"
 
+#include <tpau-cpp-kernal/Exception.h>
 
-#include "Exception.h"
 #include "File.h"
-
 
 FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
     auto scoped = (type == Type::SCOPED);
     force_build = (type == Type::BUILD);
 
     while (true) {
-        auto word = FilenameWord{tokenizer, force_build};
+        auto word = FilenameWord{ tokenizer, force_build };
         if (!word.empty()) {
             words.emplace_back(word);
         }
@@ -53,14 +50,14 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
                     return;
                 }
                 else if (word.empty()) {
-                    throw Exception("unterminated scope");
+                    throw tpau::cpp_kernal::Exception("unterminated scope");
                 }
                 else {
                     tokenizer.unget(token);
                 }
             }
             else {
-                throw Exception("unterminated scope");
+                throw tpau::cpp_kernal::Exception("unterminated scope");
             }
         }
         else {
@@ -81,7 +78,7 @@ void FilenameList::resolve(const ResolveContext& context) {
     }
     if (resolved) {
         if (filenames.empty()) {
-            for (const auto& word: words) {
+            for (const auto& word : words) {
                 word.collect_filenames(filenames);
             }
         }
@@ -111,7 +108,7 @@ std::string FilenameList::string() const {
     auto str = std::string();
     auto first = true;
 
-    for (auto& filename: filenames) {
+    for (auto& filename : filenames) {
         if (first) {
             first = false;
         }
@@ -129,7 +126,7 @@ std::ostream& operator<<(std::ostream& stream, const FilenameList& filename_list
 }
 
 void FilenameList::collect_output_files(std::unordered_set<std::string>& output_files) const {
-    for (auto& filename: filenames) {
+    for (auto& filename : filenames) {
         if (filename.type == Filename::Type::BUILD) {
             output_files.insert(filename.full_name().string());
         }
