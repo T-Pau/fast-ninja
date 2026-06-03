@@ -1,0 +1,36 @@
+site_name: '&nbsp;'
+site_url: https://fast-ninja.tpau.group/
+repo_url: https://github.com/T-Pau/fast-ninja
+copyright: ©2025 Dieter Baron
+extra:
+  generator: false
+plugins:
+  - extra-sass
+  - privacy
+  - search
+theme:
+  name: material
+  custom_dir: overrides
+  font: false
+  #logo: assets/images/logo.svg
+  logo: assets/images/tpau.svg
+  favicon: assets/images/favicon.ico
+  icon:
+    repo: fontawesome/brands/github   
+  palette:
+    primary: custom
+  features:
+    - navigation.indexes 
+    - toc.integrate 
+nav:
+  - index.md
+  - Tutorials:
+    - Tutorials/index.md
+  - How-To-Guides:
+    - How-To-Guides/index.md
+  - Reference: 
+    - Reference/index.md
+  - Explanations: 
+    - Explanations/index.md
+  - License.md
+  - Repository: 'https://github.com/T-Pau/fast-ninja'
