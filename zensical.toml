@@ -1,4 +1,4 @@
-# cspell: ignore fontawesome inlinehilite linenums nbsp pymdownx pygments superfences
+# cspell: ignore fontawesome inlinehilite linenums mkdocstrings pymdownx pygments superfences
 
 [project]
 site_name = "fast-ninja"
@@ -23,7 +23,7 @@ nav = [
        { "index.md" =  "Explanations/index.md" }
    ]},
    { "License" = "License.md" },
-   { "Repository ↬" = "https://github.com/T-Pau/fast-ninja" }
+   { "Repository" = "https://github.com/T-Pau/fast-ninja" }
 ]
 
 extra_css = [
@@ -34,13 +34,17 @@ extra_css = [
 
 [project.extra]
 generator = false
-
-# plugins = [ "privacy", "search" ]
+icons = { "external" = "octicons/link-external-16" }
 
 
 [project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
 [project.markdown_extensions.def_list]
 [project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.emoji]
+emoji_index = "zensical.extensions.emoji.twemoji"
+emoji_generator = "zensical.extensions.emoji.to_svg"
+options.custom_icons = ["overrides/.icons"]
 [project.markdown_extensions.pymdownx.inlinehilite]
 [project.markdown_extensions.pymdownx.snippets]
 [project.markdown_extensions.pymdownx.superfences]
@@ -64,6 +68,7 @@ features = [
 [project.theme.icon]
 logo = "tpau/icon"
 repo = "fontawesome/brands/github"
+admonition = { "todo" = "fontawesome/solid/tools" }
 
 [project.theme.palette]
 primary = "custom"
