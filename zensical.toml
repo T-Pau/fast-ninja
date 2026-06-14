@@ -1,4 +1,4 @@
-# cspell: ignore fontawesome inlinehilite linenums mkdocstrings pymdownx pygments superfences
+# cspell: ignore fontawesome inlinehilite linenums mkdocstrings pymdownx pygments superfences twemoji
 
 [project]
 site_name = "fast-ninja"

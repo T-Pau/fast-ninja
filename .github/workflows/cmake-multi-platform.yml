@@ -62,6 +62,12 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "packages-dir=$HOME/packages" >> "$GITHUB_OUTPUT"
+
+    - name: Install T'Pau C++ Kernal
+      run: >
+        curl -L https://tpau-cpp-kernal.tpau.group/ci/tpau-cpp-kernal-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
+        -o $HOME/tpau-cpp-kernal.zip && unzip $HOME/tpau-cpp-kernal.zip -d ${{ steps.strings.outputs.packages-dir }}
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -71,6 +77,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_INSTALL_PREFIX="${{ steps.strings.outputs.packages-dir }}"
         -S ${{ github.workspace }}
 
     - name: Build
@@ -82,3 +89,8 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+    - name: Install
+      # Install your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      # See https://cmake.org/cmake/help/latest/manual/cmake.1.html#build-and-test-mode for more detail
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
