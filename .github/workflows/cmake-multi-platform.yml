@@ -1,7 +1,7 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 
-# cspell: words DCMAKE MSVC
+# cspell: words DCMAKE MSVC runneradmin
 
 name: build
 
@@ -55,37 +55,59 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Repository
+      # Check out the repository under $GITHUB_WORKSPACE, so your job can access it.
+      # The submodules: recursive option ensures that any submodules are also checked out.
+      # See https://github.com/actions/checkout#checkout-submodules
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
-    - name: Set reusable strings
+    - name: Set Reusable Strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
+        packages_dir="$HOME/packages"
+        if [[ "$packages_dir" == /c/* ]]; then
+          # Convert the path to a Windows-style path if it is a Cygwin-style path (e.g., /c/Users/runneradmin/packages -> C:\Users\runneradmin\packages)
+          packages_dir="$(cygpath -w "$packages_dir")"
+        fi
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "packages-dir=$HOME/packages" >> "$GITHUB_OUTPUT"
+        echo "packages-dir=$packages_dir" >> "$GITHUB_OUTPUT"
 
-    - name: Install T'Pau C++ Kernal
-      run: >
-        curl -L https://tpau-cpp-kernal.tpau.group/ci/tpau-cpp-kernal-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
-        -o $HOME/tpau-cpp-kernal.zip && unzip $HOME/tpau-cpp-kernal.zip -d ${{ steps.strings.outputs.packages-dir }}
+    - name: Install Python and pip
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.14'
+
+    - name: Create Build Directory
+      run: |
+        cmake -E make_directory "${{ steps.strings.outputs.build-output-dir }}"
+
+    - name: Install Dependencies
+      # Until we have an official release of tpau-cpp-kernal, we will download binaries built by the CI. The copy on the T'Pau server is manually updated.
+      run: |
+        pip install nihtest
+        curl -s -L https://tpau-cpp-kernal.tpau.group/ci/tpau-cpp-kernal-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
+        -o $HOME/tpau-cpp-kernal.zip && unzip $HOME/tpau-cpp-kernal.zip -d "${{ steps.strings.outputs.packages-dir }}"
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_INSTALL_PREFIX="${{ steps.strings.outputs.packages-dir }}"
-        -S ${{ github.workspace }}
+        -S ..
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
@@ -96,4 +118,5 @@ jobs:
     - name: Install
       # Install your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/cmake.1.html#build-and-test-mode for more detail
-      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --install . --config ${{ matrix.build_type }}
