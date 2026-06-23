@@ -183,7 +183,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
         if (!subninjas.empty()) {
             stream << std::endl;
             for (auto& subninja : subninjas) {
-                stream << "subninja " << (build_directory / tpau::cpp_kernal::replace_extension(subninja, "ninja")).lexically_normal().string() << std::endl;
+                stream << "subninja " << (build_directory / tpau::cpp_kernal::replace_extension(subninja, "ninja")).lexically_normal().generic_string() << std::endl;
             }
         }
     }
