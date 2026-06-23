@@ -59,7 +59,7 @@ jobs:
       # Check out the repository under $GITHUB_WORKSPACE, so your job can access it.
       # The submodules: recursive option ensures that any submodules are also checked out.
       # See https://github.com/actions/checkout#checkout-submodules
-    - uses: actions/checkout@v6
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -87,6 +87,7 @@ jobs:
 
     - name: Install Dependencies
       # Until we have an official release of tpau-cpp-kernal, we will download binaries built by the CI. The copy on the T'Pau server is manually updated.
+      shell: bash
       run: |
         pip install nihtest
         curl -s -L https://tpau-cpp-kernal.tpau.group/ci/tpau-cpp-kernal-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
