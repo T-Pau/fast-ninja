@@ -33,6 +33,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
+using namespace tpau::cpp_kernal;
+
 FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
     auto scoped = (type == Type::SCOPED);
     force_build = (type == Type::BUILD);
@@ -50,14 +52,14 @@ FilenameList::FilenameList(Tokenizer& tokenizer, Type type) {
                     return;
                 }
                 else if (word.empty()) {
-                    throw tpau::cpp_kernal::Exception("unterminated scope");
+                    throw Exception("unterminated scope");
                 }
                 else {
                     tokenizer.unget(token);
                 }
             }
             else {
-                throw tpau::cpp_kernal::Exception("unterminated scope");
+                throw Exception("unterminated scope");
             }
         }
         else {

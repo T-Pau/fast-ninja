@@ -33,6 +33,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
+using namespace tpau::cpp_kernal;
+
 Build::Build(const File* file, Tokenizer& tokenizer) : ScopedDirective(file) {
     outputs = Dependencies{ tokenizer, true };
     tokenizer.expect(Tokenizer::TokenType::COLON, Tokenizer::Skip::SPACE);
@@ -53,7 +55,7 @@ void Build::process(const File& file) {
     if (!is_phony()) {
         rule = file.find_rule(rule_name);
         if (!rule) {
-            throw tpau::cpp_kernal::Exception("unknown rule %s", rule_name.c_str());
+            throw Exception("unknown rule %s", rule_name.c_str());
         }
     }
     inputs.resolve(file);

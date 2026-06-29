@@ -72,7 +72,7 @@ class Text {
 
     [[nodiscard]] bool is_resolved() const { return resolved; }
 
-    [[nodiscard]] tpau::cpp_kernal::Location location() const { return {}; } // TODO
+    [[nodiscard]] Location location() const { return {}; } // TODO
 
   private:
     std::vector<Word> words;

@@ -33,6 +33,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameVariable.h"
 
+using namespace tpau::cpp_kernal;
+
 FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build{ force_build } {
     std::string string;
 
@@ -51,7 +53,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 break;
             }
             else {
-                throw tpau::cpp_kernal::Exception("unmatched }}");
+                throw Exception("unmatched }}");
             }
         }
         else if (token.type == Tokenizer::TokenType::BEGIN_FILENAME) {
@@ -62,7 +64,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 continue;
             }
             else {
-                throw tpau::cpp_kernal::Exception("cannot nest filenames");
+                throw Exception("cannot nest filenames");
             }
         }
         else if (token.type == Tokenizer::TokenType::NEWLINE) {
@@ -70,7 +72,7 @@ FilenameWord::FilenameWord(Tokenizer& tokenizer, bool force_build) : force_build
                 tokenizer.unget(token);
                 break;
             }
-            throw tpau::cpp_kernal::Exception("unterminated filename");
+            throw Exception("unterminated filename");
         }
 
         if (token.is_variable_reference()) {
@@ -109,7 +111,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
                 element = variable;
             }
             else {
-                throw tpau::cpp_kernal::Exception("unknown variable %s", variable_reference.name.c_str());
+                throw Exception("unknown variable %s", variable_reference.name.c_str());
             }
         }
         if (std::holds_alternative<const Variable*>(element)) {
@@ -155,13 +157,13 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
             else if (std::holds_alternative<VariableReference>(element)) {
                 auto variable_reference = std::get<VariableReference>(element);
-                throw tpau::cpp_kernal::Exception("unresolved variable %s", variable_reference.name.c_str());
+                throw Exception("unresolved variable %s", variable_reference.name.c_str());
             }
             else {
                 auto variable = std::get<const Variable*>(element);
                 if (variable->is_filename()) {
                     if (filename_variable) {
-                        throw tpau::cpp_kernal::Exception("multiple filename variables in filename not allowed");
+                        throw Exception("multiple filename variables in filename not allowed");
                     }
                     else {
                         filename_variable = variable->as_filename();
@@ -188,7 +190,7 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
         }
         else {
-            throw tpau::cpp_kernal::Exception("internal error: file name never resolved");
+            throw Exception("internal error: file name never resolved");
         }
     }
 }

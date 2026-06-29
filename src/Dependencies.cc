@@ -34,6 +34,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tpau-cpp-kernal/DiagnosticOutput.h>
 #include <tpau-cpp-kernal/Exception.h>
 
+using namespace tpau::cpp_kernal;
+
 Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
     auto type = is_build ? FilenameList::BUILD : FilenameList::INLINE;
 
@@ -62,8 +64,8 @@ Dependencies::Dependencies(Tokenizer& tokenizer, bool is_build) {
                 break;
 
             default:
-                tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location) << "internal error: " << token.type_name() << " not included in filename";
-                throw tpau::cpp_kernal::Exception();
+                DiagnosticOutput::global.error(token.location, "internal error: {} not included in filename", token.type_name());
+                throw Exception();
         }
     }
 }
@@ -87,7 +89,7 @@ void Dependencies::resolve(const Scope& scope) {
             }
             str << variable;
         }
-        throw tpau::cpp_kernal::Exception("unresolved variables: %s", str.str().c_str());
+        throw Exception("unresolved variables: %s", str.str().c_str());
     }
 }
 

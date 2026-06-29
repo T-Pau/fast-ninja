@@ -29,8 +29,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ResolveContext.h"
 
-#include <tpau-cpp-kernal/Exception.h>
-
 const Variable* ResolveContext::get_variable(const std::string& name) const {
     const auto variable = scope.get_variable(name);
     return variable;

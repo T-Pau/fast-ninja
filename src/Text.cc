@@ -29,8 +29,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Text.h"
 
-#include <tpau-cpp-kernal/Exception.h>
-
 #include "File.h"
 
 Text::Text(Tokenizer& tokenizer) {

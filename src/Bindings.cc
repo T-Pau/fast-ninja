@@ -38,6 +38,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TextVariable.h"
 #include "VariableDependencies.h"
 
+using namespace tpau::cpp_kernal;
+
 Bindings::Bindings(Tokenizer& tokenizer) {
     auto token = tokenizer.next(Tokenizer::Skip::WHITESPACE);
     if (token.type != Tokenizer::TokenType::BEGIN_SCOPE) {
@@ -47,8 +49,8 @@ Bindings::Bindings(Tokenizer& tokenizer) {
 
     while (((token = tokenizer.next(Tokenizer::Skip::SPACE))) && token.type != Tokenizer::TokenType::END_SCOPE) {
         if (token.type != Tokenizer::TokenType::WORD) {
-            tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "invalid variable name");
-            throw tpau::cpp_kernal::Exception();
+            DiagnosticOutput::global.error(token.location, "invalid variable name");
+            throw Exception();
         }
         auto name = token.string();
         token = tokenizer.next(Tokenizer::Skip::SPACE);
@@ -59,8 +61,8 @@ Bindings::Bindings(Tokenizer& tokenizer) {
             variables[name] = std::unique_ptr<Variable>(new FilenameVariable{ name, tokenizer });
         }
         else {
-            tpau::cpp_kernal::DiagnosticOutput::global.error({}, token.location, "assignment expected");
-            throw tpau::cpp_kernal::Exception();
+            DiagnosticOutput::global.error(token.location, "assignment expected");
+            throw Exception();
         }
     }
 }

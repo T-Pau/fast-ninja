@@ -35,6 +35,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <tpau-cpp-kernal/Exception.h>
 
+using namespace tpau::cpp_kernal;
+
 VariableDependencies::VariableDependencies(const std::unordered_map<std::string, std::shared_ptr<Variable>>& variables) {
     for (auto& name : std::views::keys(variables)) {
         unresolved[name] = {};
@@ -49,7 +51,7 @@ void VariableDependencies::update(const std::string& name, const std::unordered_
     }
     else {
         if (!std::ranges::all_of(dependencies, [this](const auto& name) { return known_variables.contains(name); })) {
-            throw tpau::cpp_kernal::Exception("unknown variable"); // TODO: include name
+            throw Exception("unknown variable"); // TODO: include name
         }
         unresolved[name] = dependencies;
     }
@@ -69,7 +71,7 @@ std::unordered_set<std::string> VariableDependencies::get_next() const {
     }
 
     if (next.empty()) {
-        throw tpau::cpp_kernal::Exception("cycle in variable definition"); // TODO: include list of variables
+        throw Exception("cycle in variable definition"); // TODO: include list of variables
     }
 
     return next;

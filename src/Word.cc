@@ -35,6 +35,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FilenameVariable.h"
 
+using namespace tpau::cpp_kernal;
+
 Word::Word(Tokenizer& tokenizer) {
     std::string string;
 
@@ -96,7 +98,7 @@ void Word::print(std::ostream& stream) const {
             }
             else {
                 if (filename_variable || filename_word) {
-                    throw tpau::cpp_kernal::Exception("multiple file names in word not allowed");
+                    throw Exception("multiple file names in word not allowed");
                 }
                 filename_variable = variable->as_filename();
                 current_string = &postfix;
@@ -104,7 +106,7 @@ void Word::print(std::ostream& stream) const {
         }
         else if (std::holds_alternative<FilenameWord>(element)) {
             if (filename_variable || filename_word) {
-                throw tpau::cpp_kernal::Exception("multiple file names in word not allowed");
+                throw Exception("multiple file names in word not allowed");
             }
             filename_word = &std::get<FilenameWord>(element);
             current_string = &postfix;
@@ -150,7 +152,7 @@ void Word::resolve(const ResolveContext& context) {
                     element = variable;
                 }
                 else {
-                    throw tpau::cpp_kernal::Exception("unknown variable %s", variable_reference.name.c_str());
+                    throw Exception("unknown variable %s", variable_reference.name.c_str());
                 }
             }
         }

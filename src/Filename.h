@@ -40,9 +40,9 @@ class Filename {
   public:
     enum class Type { BUILD, COMPLETE, SOURCE, UNKNOWN };
 
-    explicit Filename(tpau::cpp_kernal::Location location, std::string name) : location{ std::move(location) }, name{ std::move(name) } {}
+    explicit Filename(Location location, std::string name) : location{ std::move(location) }, name{ std::move(name) } {}
 
-    Filename(tpau::cpp_kernal::Location location, Type type, std::string name) : location{ std::move(location) }, type{ type }, name{ std::move(name) } {}
+    Filename(Location location, Type type, std::string name) : location{ std::move(location) }, type{ type }, name{ std::move(name) } {}
 
     Filename() = default;
 
@@ -58,7 +58,7 @@ class Filename {
     Type type{ Type::UNKNOWN };
     std::string name;
     std::filesystem::path prefix;
-    tpau::cpp_kernal::Location location;
+    Location location;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Filename& file_name);

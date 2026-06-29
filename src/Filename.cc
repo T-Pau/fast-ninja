@@ -35,6 +35,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FastNinjaUtil.h"
 #include "File.h"
 
+using namespace tpau::cpp_kernal;
+
 void Filename::resolve(const ResolveContext& context) {
     if (!context.classify_filenames) {
         return;
@@ -66,8 +68,8 @@ void Filename::resolve(const ResolveContext& context) {
                 prefix = file->source_directory;
             }
             if (!std::filesystem::exists(full_name())) {
-                tpau::cpp_kernal::DiagnosticOutput::global.error({}, location) << "source file '" << full_name().string() << "' does not exist";
-                throw tpau::cpp_kernal::Exception();
+                DiagnosticOutput::global.error(location, "source file '{}' does not exist", full_name().string());
+                throw Exception();
             }
             break;
 
@@ -75,8 +77,8 @@ void Filename::resolve(const ResolveContext& context) {
             if (prefix.empty()) {
                 prefix = file->source_directory;
             }
-            tpau::cpp_kernal::DiagnosticOutput::global.error({}, location) << "unknown file '" << full_name().string() << "'"; // TODO: include sub-directory
-            throw tpau::cpp_kernal::Exception();
+            DiagnosticOutput::global.error(location, "unknown file '{}'", full_name().string()); // TODO: include sub-directory
+            throw Exception();
     }
 }
 

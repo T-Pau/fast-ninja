@@ -31,8 +31,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <tpau-cpp-kernal/Exception.h>
-
 #include "FilenameVariable.h"
 #include "ResolveContext.h"
 #include "TextVariable.h"

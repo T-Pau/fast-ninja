@@ -33,6 +33,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
+using namespace tpau::cpp_kernal;
+
 Text TextParser::parse() {
     tokenizer.skip_space();
     parse_tokens();

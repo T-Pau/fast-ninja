@@ -54,7 +54,7 @@ class FilenameWord {
 
     void collect_filenames(std::vector<Filename>& filenames) const;
 
-    tpau::cpp_kernal::Location location;
+    Location location;
 
   private:
     std::vector<std::variant<std::string, VariableReference, const Variable*>> elements;

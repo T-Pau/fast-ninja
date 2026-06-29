@@ -35,7 +35,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "File.h"
 
-class fast_ninja : public tpau::cpp_kernal::Command {
+using namespace tpau::cpp_kernal;
+
+class fast_ninja : public Command {
   public:
     fast_ninja() : Command(options, "top-source-directory", "fast-ninja") {}
 
@@ -50,12 +52,12 @@ class fast_ninja : public tpau::cpp_kernal::Command {
     size_t minimum_arguments() override { return 1; }
 
   private:
-    static std::vector<tpau::cpp_kernal::Commandline::Option> options;
+    static std::vector<Commandline::Option> options;
 
     std::unique_ptr<File> file;
 };
 
-std::vector<tpau::cpp_kernal::Commandline::Option> fast_ninja::options = {};
+std::vector<Commandline::Option> fast_ninja::options = {};
 
 int main(int argc, char* argv[]) {
     auto command = fast_ninja();

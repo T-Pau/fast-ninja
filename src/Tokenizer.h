@@ -41,6 +41,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tpau-cpp-kernal/FileSource.h>
 #include <tpau-cpp-kernal/Location.h>
 
+using namespace tpau::cpp_kernal;
+
 class Tokenizer {
   public:
     explicit Tokenizer(const std::filesystem::path& filename);
@@ -86,9 +88,9 @@ class Tokenizer {
       public:
         explicit Token(TokenType type) : type{ type } {}
 
-        Token(const tpau::cpp_kernal::Location& location, TokenType type) : location{ location }, type{ type } {}
+        Token(const Location& location, TokenType type) : location{ location }, type{ type } {}
 
-        Token(const tpau::cpp_kernal::Location& location, TokenType type, std::string value) : location{ location }, type{ type }, value{ std::move(value) } {}
+        Token(const Location& location, TokenType type, std::string value) : location{ location }, type{ type }, value{ std::move(value) } {}
 
         explicit operator bool() const { return type != TokenType::END; }
 
@@ -102,7 +104,7 @@ class Tokenizer {
 
         [[nodiscard]] static std::string type_name(TokenType type);
 
-        tpau::cpp_kernal::Location location;
+        Location location;
         TokenType type;
         std::string value;
     };
@@ -120,17 +122,17 @@ class Tokenizer {
     void unget_character(Character c);
     [[nodiscard]] Token get_next();
     [[nodiscard]] int count_space();
-    [[nodiscard]] Token tokenize_braced_variable(tpau::cpp_kernal::Location location);
-    [[nodiscard]] Token tokenize_dollar(tpau::cpp_kernal::Location location);
-    [[nodiscard]] Token tokenize_space(tpau::cpp_kernal::Location location);
-    [[nodiscard]] Token tokenize_variable(tpau::cpp_kernal::Location location, Character first_character);
-    [[nodiscard]] Token tokenize_word(tpau::cpp_kernal::Location location, Character first_character);
+    [[nodiscard]] Token tokenize_braced_variable(Location location);
+    [[nodiscard]] Token tokenize_dollar(Location location);
+    [[nodiscard]] Token tokenize_space(Location location);
+    [[nodiscard]] Token tokenize_variable(Location location, Character first_character);
+    [[nodiscard]] Token tokenize_word(Location location, Character first_character);
 
     static std::unordered_map<std::string, TokenType> keywords;
     static std::unordered_map<int, CharacterType> special_characters;
 
     std::filesystem::path filename;
-    tpau::cpp_kernal::FileSource source;
+    FileSource source;
     std::optional<Character> ungot_character;
     std::optional<Token> ungot;
     bool begining_of_line = true;
