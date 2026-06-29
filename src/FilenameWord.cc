@@ -111,7 +111,7 @@ void FilenameWord::resolve(const ResolveContext& context) {
                 element = variable;
             }
             else {
-                throw Exception("unknown variable %s", variable_reference.name.c_str());
+                throw Exception("unknown variable {}", variable_reference.name);
             }
         }
         if (std::holds_alternative<const Variable*>(element)) {
@@ -157,7 +157,7 @@ void FilenameWord::collect_filenames(std::vector<Filename>& filenames) const {
             }
             else if (std::holds_alternative<VariableReference>(element)) {
                 auto variable_reference = std::get<VariableReference>(element);
-                throw Exception("unresolved variable %s", variable_reference.name.c_str());
+                throw Exception("unresolved variable {}", variable_reference.name);
             }
             else {
                 auto variable = std::get<const Variable*>(element);

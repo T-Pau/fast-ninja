@@ -161,7 +161,7 @@ void File::create_output() const { // NOLINT(misc-no-recursion)
         auto stream = std::ofstream(build_filename);
 
         if (stream.fail()) {
-            throw Exception("can't create output '%s'", build_filename.c_str());
+            throw Exception("can't create output '{}'", build_filename.string());
         }
 
         stream << "# This file is automatically created by fast-ninja from " << source_filename.generic_string() << std::endl;

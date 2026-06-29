@@ -55,7 +55,7 @@ void Build::process(const File& file) {
     if (!is_phony()) {
         rule = file.find_rule(rule_name);
         if (!rule) {
-            throw Exception("unknown rule %s", rule_name.c_str());
+            throw Exception("unknown rule {}", rule_name);
         }
     }
     inputs.resolve(file);

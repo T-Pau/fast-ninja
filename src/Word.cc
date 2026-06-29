@@ -152,7 +152,7 @@ void Word::resolve(const ResolveContext& context) {
                     element = variable;
                 }
                 else {
-                    throw Exception("unknown variable %s", variable_reference.name.c_str());
+                    throw Exception("unknown variable {}", variable_reference.name);
                 }
             }
         }

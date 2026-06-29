@@ -89,7 +89,7 @@ void Dependencies::resolve(const Scope& scope) {
             }
             str << variable;
         }
-        throw Exception("unresolved variables: %s", str.str().c_str());
+        throw Exception("unresolved variables: {}", str.str());
     }
 }
 
