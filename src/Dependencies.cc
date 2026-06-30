@@ -33,6 +33,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <tpau-cpp-kernal/DiagnosticOutput.h>
 #include <tpau-cpp-kernal/Exception.h>
+#include <tpau-cpp-kernal/Util.h>
 
 using namespace tpau::cpp_kernal;
 
@@ -78,18 +79,7 @@ void Dependencies::resolve(const Scope& scope) {
     order.resolve(context);
     validation.resolve(context);
     if (!result.unresolved_used_variables.empty()) {
-        std::ostringstream str;
-        auto first = true;
-        for (const auto& variable : result.unresolved_used_variables) {
-            if (first) {
-                first = false;
-            }
-            else {
-                str << ", ";
-            }
-            str << variable;
-        }
-        throw Exception("unresolved variables: {}", str.str());
+        throw Exception("unresolved variables: {}", join(sorted(result.unresolved_used_variables), ", "));
     }
 }
 
